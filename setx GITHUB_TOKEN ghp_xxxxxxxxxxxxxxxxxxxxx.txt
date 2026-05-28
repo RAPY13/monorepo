@@ -1,2 +1,0 @@
-bootstrap-github.ps1
-scripts/github-structure.json
