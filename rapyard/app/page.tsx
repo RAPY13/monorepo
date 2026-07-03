@@ -1,7 +1,7 @@
-import Hero from "@/components/Hero";
-import LaneCards from "@/components/LaneCards";
-import Forge from "@/components/Forge";
-import Footer from "@/components/Footer";
+import Hero from "@/components/sections/Hero";
+import LaneCards from "@/components/sections/LaneCards";
+import Forge from "@/components/sections/Forge";
+import Footer from "@/components/sections/Footer";
 
 export default function Home() {
   return (
