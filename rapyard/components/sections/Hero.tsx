@@ -40,22 +40,103 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="mt-10 flex flex-wrap justify-center gap-4"
+          transition={{ duration: 0.7, delay: 0.25 }}
+          className="mt-12 flex w-full flex-col items-center gap-6"
         >
-          <a
-            href="#work"
-            className="rounded-full border border-orange-400/40 bg-orange-500/10 px-6 py-3 text-sm font-medium text-orange-200 transition hover:bg-orange-500/20"
+          <div className="flex min-w-[22rem] flex-wrap justify-center gap-4 text-xs uppercase tracking-[0.35em] text-zinc-200 sm:justify-center">
+            {['BATTLES', 'RECORDING STUDIO', 'MARKETPLACE', 'CREATOR ROYALTIES', 'SOCIAL MEDIA VOTE'].map((label) => (
+              <span
+                key={label}
+                className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm shadow-black/10 ${
+                  label === 'SOCIAL MEDIA VOTE'
+                    ? 'border border-red-400/40 bg-red-500/10 text-red-200'
+                    : 'border border-white/15 bg-white/5 text-white'
+                }`}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.28 }}
+            className="mt-4 inline-flex items-center gap-3 rounded-3xl border border-red-500/20 bg-red-500/5 px-5 py-4 text-left text-sm text-white shadow-[0_18px_90px_rgba(255,0,0,0.12)] sm:mx-auto sm:max-w-2xl"
           >
-            View our work
-          </a>
-          <a
-            href="#contact"
-            className="rounded-full border border-white/10 bg-white/10 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/20"
-          >
-            Start a project
-          </a>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20 text-red-100 ring-1 ring-red-300/20">
+              ❤️
+            </span>
+            <div>
+              <p className="uppercase tracking-[0.35em] text-red-200">Listener Power</p>
+              <p className="mt-1 text-sm text-zinc-100">Listeners vote here — no RAPY needed. React, share, and shape the leaderboard from the feed.</p>
+            </div>
+          </motion.div>
+
+          <div className="h-px w-full max-w-4xl bg-white/15" />
+
+          <div className="rounded-3xl border border-red-500/20 bg-black/40 px-6 py-5 text-center shadow-[0_20px_100px_rgba(0,0,0,0.35)] sm:px-8">
+            <p className="text-sm uppercase tracking-[0.4em] text-red-300">Social Media Vote</p>
+            <p className="mt-2 text-base font-semibold uppercase tracking-[0.28em] text-white sm:text-lg">
+              For listeners — your vote makes the yard move.
+            </p>
+          </div>
         </motion.div>
+
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          className="mt-12 w-full max-w-xl"
+        >
+          <div className="space-y-4">
+            <label className="block text-left text-sm uppercase tracking-[0.35em] text-zinc-300" htmlFor="email">
+              Enter your email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@rapyard.com"
+              className="w-full rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-orange-400/80 focus:bg-white/10"
+            />
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+              <p className="text-sm uppercase tracking-[0.35em] text-zinc-300">Pick your lane</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {['Rapper', 'Producer', 'Listener'].map((lane) => (
+                  <label
+                    key={lane}
+                    className="flex cursor-pointer items-center justify-between rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-white transition hover:border-red-400/70"
+                  >
+                    <span>{lane}</span>
+                    <input
+                      type="radio"
+                      name="lane"
+                      value={lane.toLowerCase()}
+                      className="h-4 w-4 accent-orange-400"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-3xl bg-red-500 px-7 py-4 text-sm font-semibold uppercase tracking-[0.25em] text-black transition hover:bg-red-400"
+            >
+              Join the founders list
+            </button>
+          </div>
+        </motion.form>
+      </div>
+
+      <div className="pointer-events-none absolute right-6 top-1/2 hidden h-[340px] w-56 -translate-y-1/2 rotate-2 flex-col justify-center text-right text-white lg:flex">
+        <p className="text-xs uppercase tracking-[0.55em] text-zinc-300">Creators build the yard.</p>
+        <p className="mt-4 text-3xl font-black uppercase tracking-[0.15em] text-white drop-shadow-[0_0_24px_rgba(255,255,255,0.12)]">
+          Listeners move the yard.
+        </p>
+        <span className="mt-5 inline-block h-0.5 w-20 bg-red-500 shadow-[0_0_16px_rgba(255,0,0,0.35)]" />
       </div>
     </section>
   );
