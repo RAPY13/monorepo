@@ -77,9 +77,9 @@ export default function Page() {
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-left text-sm text-white/80 sm:text-base">
             <p className="font-semibold uppercase tracking-[0.25em] text-yellow-300 mb-2">Email block</p>
-            <p>
-              Use <span className="font-semibold text-white">rapyard.app@gmail.com</span> to join the waitlist and get the Founder badge.
-            </p>
+              <p>
+                Use your email to join the WAITLIST and get the Founders badge.
+              </p>
           </div>
         </form>
 
