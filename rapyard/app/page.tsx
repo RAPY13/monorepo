@@ -3,12 +3,14 @@
 import { FormEvent, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import WaitlistModal from "@/components/ui/WaitlistModal";
+import useWaitlist from "@/hooks/useWaitlist";
 
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState(() => searchParams?.get("email") ?? "");
   const [showModal, setShowModal] = useState(() => Boolean(searchParams?.get("openModal")));
+
+  const { email, setEmail, loading, error, enterYard } = useWaitlist(searchParams?.get("email") ?? "");
 
   useEffect(() => {
     setShowModal(Boolean(searchParams?.get("openModal")));
