@@ -1,0 +1,7 @@
+{
+  "name": "rapyard-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "wrangler pages deploy ./"
+  }
+}

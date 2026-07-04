@@ -1,0 +1,12 @@
+{
+  "domain": "rapyard.club",
+  "frontend_url": "https://rapyard.club",
+  "api_url": "https://api.rapyard.club",
+  "supabase_url": "",
+  "supabase_anon_key": "",
+  "supabase_service_role": "",
+  "cloudflare_account_id": "",
+  "cloudflare_r2_bucket": "rapyard-audio",
+  "cloudflare_pages_project": "rapyard-frontend",
+  "cloudflare_workers_project": "rapyard-api"
+}
