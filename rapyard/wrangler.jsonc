@@ -1,0 +1,54 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "rapyard",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-07-04",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"preview_urls": false,
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"routes": [
+		{
+			"pattern": "rapyard.club/*",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.rapyard.club/*",
+			"custom_domain": true
+		}
+	],
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "rapyard"
+		}
+	],
+	"observability": {
+		"enabled": false,
+		"head_sampling_rate": 1,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": false,
+			"persist": true,
+			"head_sampling_rate": 1
+		}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "rapyard-db",
+			"database_id": "8d4cfdf7-b02b-4de1-96f4-723380628704",
+			"remote": true
+		}
+	]
+}

@@ -14,22 +14,26 @@ export default function useWaitlist(initialEmail = "") {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/waitlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-    setLoading(false);
+      if (res.ok) {
+        document.cookie = "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
+        router.push("/gate");
+        return;
+      }
 
-    if (res.ok) {
-      document.cookie = "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
-      router.push("/gate");
-      return;
+      const data = await res.json().catch(() => null);
+      setError(data?.error || data?.message || "Unable to enter the yard. Try again.");
+    } catch {
+      setError("Network issue while entering the yard. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const data = await res.json().catch(() => null);
-    setError(data?.message || "Unable to enter the yard. Try again.");
   }
 
   return { email, setEmail, loading, error, enterYard };

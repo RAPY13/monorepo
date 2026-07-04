@@ -1,106 +1,218 @@
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import fs from "fs";
-import path from "path";
 
-const hasSupabase = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+const FOUNDERS_LIMIT = 500;
 
-const supabase = hasSupabase
-  ? createClient(process.env.SUPABASE_URL ?? "", process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
-  : null;
+type DbStatement = {
+  bind: (...values: unknown[]) => DbStatement;
+  first: <T>() => Promise<T | null>;
+  run: () => Promise<unknown>;
+};
 
-const DEV_FILE = path.join(process.cwd(), ".dev_waitlist.json");
+type DbLike = {
+  prepare: (query: string) => DbStatement;
+};
 
-function readDevWaitlist() {
+async function getDb() {
   try {
-    if (!fs.existsSync(DEV_FILE)) return [];
-    const raw = fs.readFileSync(DEV_FILE, "utf-8");
-    return JSON.parse(raw || "[]");
-  } catch (e) {
-    return [];
+    const { env } = await getCloudflareContext({ async: true });
+    return (env as CloudflareEnv & { DB?: DbLike }).DB ?? null;
+  } catch (error) {
+    console.error("[waitlist] Cloudflare context unavailable", error);
+    return null;
   }
 }
 
-function writeDevWaitlist(list: any[]) {
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * GET /api/waitlist
+ * Returns current Founder Program statistics.
+ */
+export async function GET() {
+  const db = await getDb();
+
+  if (!db) {
+    return NextResponse.json(
+      {
+        foundersClaimed: 0,
+        foundersLimit: FOUNDERS_LIMIT,
+        foundersRemaining: FOUNDERS_LIMIT,
+        progress: 0,
+      },
+      { status: 200 }
+    );
+  }
+
   try {
-    fs.writeFileSync(DEV_FILE, JSON.stringify(list, null, 2), "utf-8");
-  } catch (e) {
-    // ignore
+    const row = await db
+      .prepare("SELECT COUNT(*) AS total FROM waitlist")
+      .first<{ total: number }>();
+
+    const foundersClaimed = Number(row?.total ?? 0);
+
+    return NextResponse.json({
+      foundersClaimed,
+      foundersLimit: FOUNDERS_LIMIT,
+      foundersRemaining: Math.max(
+        0,
+        FOUNDERS_LIMIT - foundersClaimed
+      ),
+      progress: Math.min(
+        100,
+        (foundersClaimed / FOUNDERS_LIMIT) * 100
+      ),
+    });
+  } catch (error) {
+    console.error("[waitlist] GET failed", error);
+
+    return NextResponse.json(
+      { error: "Unable to load Founder statistics." },
+      { status: 500 }
+    );
   }
 }
 
+/**
+ * POST /api/waitlist
+ * Reserve a Founder Badge.
+ */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+
+  const email =
+    typeof body?.email === "string"
+      ? body.email.trim().toLowerCase()
+      : "";
 
   if (!email) {
-    return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Email is required." },
+      { status: 400 }
+    );
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+  if (!isValidEmail(email)) {
+    return NextResponse.json(
+      { error: "Please enter a valid email address." },
+      { status: 400 }
+    );
   }
 
-  if (supabase) {
-    const { count, error: countError } = await supabase
-      .from("waitlist")
-      .select("id", { head: true, count: "exact" });
+  const db = await getDb();
 
-    if (countError) {
-      return NextResponse.json({ error: countError.message }, { status: 500 });
-    }
+  if (!db) {
+    return NextResponse.json(
+      {
+        error:
+          "Founder reservations are temporarily unavailable in this local mode.",
+      },
+      { status: 503 }
+    );
+  }
 
-    const isFounder = (count ?? 0) < 500;
+  try {
+    // Has this email already joined?
+    const existing = await db
+      .prepare("SELECT id FROM waitlist WHERE email = ?")
+      .bind(email)
+      .first();
 
-    const { data: existing, error: fetchError } = await supabase
-      .from("waitlist")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
+    // Current founder count
+    const row = await db
+      .prepare("SELECT COUNT(*) AS total FROM waitlist")
+      .first<{ total: number }>();
 
-    if (fetchError) {
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
-    }
+    const foundersClaimed = Number(row?.total ?? 0);
 
     if (existing) {
-      return NextResponse.json(
-        { message: "You are already on the waitlist.", alreadyJoined: true, isFounder },
-        { status: 200 }
-      );
+      return NextResponse.json({
+        success: true,
+        alreadyJoined: true,
+        message: "🔥 You're already part of the Founders Program.",
+        founderNumber: null,
+        isFounder: foundersClaimed <= FOUNDERS_LIMIT,
+        foundersClaimed,
+        foundersLimit: FOUNDERS_LIMIT,
+        foundersRemaining: Math.max(
+          0,
+          FOUNDERS_LIMIT - foundersClaimed
+        ),
+        progress: Math.min(
+          100,
+          (foundersClaimed / FOUNDERS_LIMIT) * 100
+        ),
+      });
     }
 
-    const { data, error: insertError } = await supabase
-      .from("waitlist")
-      .insert({ email, source: "gate", status: "pending", is_founder: isFounder })
-      .select("id, email, is_founder")
-      .single();
+    const founderNumber = foundersClaimed + 1;
+    const isFounder = founderNumber <= FOUNDERS_LIMIT;
 
-    if (insertError || !data) {
-      return NextResponse.json({ error: insertError?.message || "Unable to join waitlist." }, { status: 500 });
-    }
+    await db
+      .prepare(
+        `
+        INSERT INTO waitlist
+        (
+          email,
+          source,
+          status,
+          is_founder
+        )
+        VALUES
+        (?, ?, ?, ?)
+      `
+      )
+      .bind(
+        email,
+        "gate",
+        "pending",
+        isFounder ? 1 : 0
+      )
+      .run();
 
-    await supabase
-      .from("users")
-      .upsert(
-        { email, lane: "listener", is_founder: isFounder },
-        { onConflict: ["email"] }
-      );
+    return NextResponse.json(
+      {
+        success: true,
 
-    return NextResponse.json({ message: "Welcome to the waitlist.", isFounder: data.is_founder, email: data.email }, { status: 201 });
+        message: isFounder
+          ? "🔥 Welcome, Founder. Your Founder Badge has been reserved."
+          : "Welcome to RapYard.",
+
+        founderNumber: isFounder ? founderNumber : null,
+
+        isFounder,
+
+        foundersClaimed: founderNumber,
+
+        foundersLimit: FOUNDERS_LIMIT,
+
+        foundersRemaining: Math.max(
+          0,
+          FOUNDERS_LIMIT - founderNumber
+        ),
+
+        progress: Math.min(
+          100,
+          (founderNumber / FOUNDERS_LIMIT) * 100
+        ),
+      },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    console.error("[waitlist] POST failed", error);
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to reserve your Founder Badge. Please try again.",
+      },
+      {
+        status: 500,
+      }
+    );
   }
-
-  // Development fallback: persist to a local JSON file so devs can test without Supabase
-  const list = readDevWaitlist();
-  const already = list.find((i: any) => i.email === email);
-  const isFounder = (list.length ?? 0) < 500;
-
-  if (already) {
-    return NextResponse.json({ message: "You are already on the waitlist.", alreadyJoined: true, isFounder }, { status: 200 });
-  }
-
-  const entry = { id: Date.now(), email, is_founder: isFounder, source: "gate", status: "pending" };
-  list.push(entry);
-  writeDevWaitlist(list);
-
-  return NextResponse.json({ message: "(dev) Welcome to the waitlist.", isFounder: entry.is_founder, email: entry.email }, { status: 201 });
 }

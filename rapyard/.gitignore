@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+/.open-next/
 
 # production
 /build
@@ -23,6 +24,15 @@
 # misc
 .DS_Store
 *.pem
+.dev.vars
+.dev_waitlist.json
+.wrangler/
+.tmp-opennext-cloudflare-readme.json
+.npm-cache/
+deploy-fresh.log
+open-next-*.tgz
+open-next-package.json
+open-next-readme.txt
 
 # debug
 npm-debug.log*

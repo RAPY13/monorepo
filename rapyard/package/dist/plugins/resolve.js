@@ -1,0 +1,45 @@
+import { readFileSync } from "node:fs";
+import logger from "../logger.js";
+function getOverrideOrDefault(override, defaultOverride) {
+    if (typeof override === "string") {
+        return override;
+    }
+    return defaultOverride;
+}
+/**
+ * @param opts.overrides - The name of the overrides to use
+ * @returns
+ */
+export function openNextResolvePlugin({ overrides, fnName, }) {
+    return {
+        name: "opennext-resolve",
+        setup(build) {
+            logger.debug(`OpenNext Resolve plugin for ${fnName}`);
+            build.onLoad({ filter: /core(\/|\\)resolve\.js/g }, async (args) => {
+                let contents = readFileSync(args.path, "utf-8");
+                //TODO: refactor this. Every override should be at the same place so we can generate this dynamically
+                if (overrides?.wrapper) {
+                    contents = contents.replace("../wrappers/aws-lambda.js", `../wrappers/${getOverrideOrDefault(overrides.wrapper, "aws-lambda")}.js`);
+                }
+                if (overrides?.converter) {
+                    contents = contents.replace("../converters/aws-apigw-v2.js", `../converters/${getOverrideOrDefault(overrides.converter, "dummy")}.js`);
+                }
+                if (overrides?.tagCache) {
+                    contents = contents.replace("../cache/tag/dynamodb.js", `../cache/tag/${getOverrideOrDefault(overrides.tagCache, "dynamodb-lite")}.js`);
+                }
+                if (overrides?.queue) {
+                    contents = contents.replace("../queue/sqs.js", `../queue/${getOverrideOrDefault(overrides.queue, "sqs-lite")}.js`);
+                }
+                if (overrides?.incrementalCache) {
+                    contents = contents.replace("../cache/incremental/s3.js", `../cache/incremental/${getOverrideOrDefault(overrides.incrementalCache, "s3-lite")}.js`);
+                }
+                if (overrides?.imageLoader) {
+                    contents = contents.replace("../overrides/imageLoader/s3.js", `../overrides/imageLoader/${getOverrideOrDefault(overrides.imageLoader, "s3")}.js`);
+                }
+                return {
+                    contents,
+                };
+            });
+        },
+    };
+}

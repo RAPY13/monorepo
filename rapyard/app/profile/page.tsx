@@ -1,5 +1,5 @@
 import BottomNav from "@/app/components/BottomNav";
-import FounderBadge from "@/components/ui/FounderBadge";
+import FoundersBadge from "@/components/ui/FoundersBadge";
 
 export default function ProfilePage() {
   return (
@@ -10,7 +10,7 @@ export default function ProfilePage() {
             <p className="text-sm uppercase tracking-[0.35em] text-red-300">Profile</p>
             <h1 className="mt-4 text-4xl font-black tracking-tight">Your Yard Identity</h1>
           </div>
-          <FounderBadge />
+          <FoundersBadge />
         </div>
 
         <p className="mt-6 max-w-3xl text-zinc-300">
