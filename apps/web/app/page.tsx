@@ -1,7 +1,17 @@
-export default function Home() {
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+
+export default async function Page() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const { data: todos } = await supabase.from('todos').select()
+
   return (
-    <main className='min-h-screen bg-black text-white flex items-center justify-center'>
-      <h1 className='text-4xl font-bold text-yellow-400'>RapYard Web</h1>
-    </main>
-  );
+    <ul>
+      {todos?.map((todo) => (
+        <li key={todo.id}>{todo.name}</li>
+      ))}
+    </ul>
+  )
 }
