@@ -73,7 +73,7 @@ export default function Hero() {
           whileTap={{
             scale: 0.96,
           }}
-          onClick={() => router.push("/?email=rapyard.app%40gmail.com")}
+          onClick={() => router.push("/?openModal=1")}
           className="mt-16 rounded-xl border-2 border-orange-500 bg-orange-500/10 px-12 py-5 text-lg font-bold uppercase tracking-widest shadow-[0_0_60px_rgba(255,140,0,.25)] transition hover:bg-orange-500 hover:text-black"
         >
           ENTER THE YARD

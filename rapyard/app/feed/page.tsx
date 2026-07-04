@@ -38,7 +38,7 @@ export default function FeedPage() {
             <div className="flex flex-col gap-3 sm:items-end">
               <FoundersBadge />
               <Link
-                href="/?email=rapyard.app%40gmail.com"
+                href="/?openModal=1"
                 className="inline-flex rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-white/10"
               >
                 Re-open Gate

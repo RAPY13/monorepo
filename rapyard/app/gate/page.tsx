@@ -34,7 +34,7 @@ export default function GatePage() {
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <button
             type="button"
-            onClick={() => router.replace(hasAuth ? "/feed" : "/?email=rapyard.app%40gmail.com")}
+            onClick={() => router.replace(hasAuth ? "/feed" : "/?openModal=1")}
             className="rounded-full bg-yellow-400 px-8 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-black transition hover:bg-yellow-300"
           >
             {hasAuth ? "Enter the Feed" : "Return to Gate"}
@@ -42,7 +42,7 @@ export default function GatePage() {
           {hasAuth ? null : (
             <button
               type="button"
-              onClick={() => router.replace("/?email=rapyard.app%40gmail.com")}
+              onClick={() => router.replace("/?openModal=1")}
               className="rounded-full border border-white/10 bg-white/5 px-8 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-white/10"
             >
               Start the Gate
