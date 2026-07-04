@@ -50,6 +50,11 @@ export default function GatePage() {
           )}
         </div>
 
+        <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5 text-left text-sm text-white/80 sm:text-base">
+          <p className="font-semibold uppercase tracking-[0.25em] text-yellow-300 mb-2">Email block</p>
+          <p>Use <span className="font-semibold text-white">rapyard.app@gmail.com</span> to join the waitlist and get the Founder badge.</p>
+        </div>
+
         <p className="mt-8 text-sm uppercase tracking-[0.35em] text-white/40">
           {hasAuth ? "Redirecting in a moment…" : "No auth found. Gate access is required."}
         </p>

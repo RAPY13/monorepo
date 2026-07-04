@@ -59,7 +59,7 @@ export default function Page() {
             <input
               type="email"
               required
-              placeholder="you@rapyard.com"
+              placeholder="rapyard.app@gmail.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-4 text-white placeholder:text-white/40 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400/30"
@@ -74,6 +74,13 @@ export default function Page() {
           </div>
 
           {error ? <p className="text-sm text-red-300">{error}</p> : null}
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 text-left text-sm text-white/80 sm:text-base">
+            <p className="font-semibold uppercase tracking-[0.25em] text-yellow-300 mb-2">Email block</p>
+            <p>
+              Use <span className="font-semibold text-white">rapyard.app@gmail.com</span> to join the waitlist and get the Founder badge.
+            </p>
+          </div>
         </form>
 
         <div className="mt-12 flex flex-col items-center gap-3">
