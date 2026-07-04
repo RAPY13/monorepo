@@ -7,8 +7,12 @@ import Embers from "@/components/effects/Embers";
 
 export default function Hero() {
   return (
-    <section className="relative isolate overflow-hidden bg-black px-6 py-24 text-white sm:px-8 lg:px-12">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,140,0,0.12),_transparent_45%)]" />
+    <section
+      className="relative isolate overflow-hidden bg-cover bg-center px-6 py-24 text-white sm:px-8 lg:px-12"
+      style={{ backgroundImage: "url('/LandingPage.png')" }}
+    >
+      <div className="absolute inset-0 bg-black/65" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,140,0,0.12),_transparent_45%)] mix-blend-screen" />
 
       <Logo />
       <Smoke />
