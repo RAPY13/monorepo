@@ -7,21 +7,12 @@
 		"nodejs_compat",
 		"global_fetch_strictly_public"
 	],
+	"workers_dev": true,
 	"preview_urls": false,
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
-	"routes": [
-		{
-			"pattern": "rapyard.club/*",
-			"custom_domain": true
-		},
-		{
-			"pattern": "www.rapyard.club/*",
-			"custom_domain": true
-		}
-	],
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
