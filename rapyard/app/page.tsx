@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import WaitlistModal from "@/components/ui/WaitlistModal";
 import useWaitlist from "@/hooks/useWaitlist";
@@ -10,36 +10,15 @@ export default function Page() {
   const searchParams = useSearchParams();
   const [showModal, setShowModal] = useState(() => Boolean(searchParams?.get("openModal")));
 
-  const { email, setEmail, loading, error, enterYard } = useWaitlist(searchParams?.get("email") ?? "");
-
   useEffect(() => {
     setShowModal(Boolean(searchParams?.get("openModal")));
   }, [searchParams]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  async function enterYard(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
 
-    const res = await fetch("/api/waitlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
 
-    setLoading(false);
 
-    if (res.ok) {
-      document.cookie = "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
-      router.push("/gate");
-      return;
-    }
 
-    const data = await res.json().catch(() => null);
-    setError(data?.message || "Unable to enter the yard. Try again.");
-  }
+  const { email, setEmail, loading, error, enterYard } = useWaitlist(searchParams?.get("email") ?? "");
 
   return (
     <main
