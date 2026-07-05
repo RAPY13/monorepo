@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "rapyard",
+	"name": "rapyard-club-web",
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-07-04",
 	"compatibility_flags": [
@@ -13,10 +13,20 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"routes": [
+		{
+			"pattern": "rapyard.club",
+			"custom_domain": true
+		},
+		{
+			"pattern": "www.rapyard.club",
+			"custom_domain": true
+		}
+	],
 	"services": [
 		{
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "rapyard"
+			"service": "rapyard-club-web"
 		}
 	],
 	"observability": {

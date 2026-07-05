@@ -4,13 +4,14 @@ const nav = [
   { href: "/feed", label: "Yard", icon: "🏠" },
   { href: "/booth", label: "Booth", icon: "🎙" },
   { href: "/battles", label: "Battles", icon: "🥊" },
+  { href: "/help", label: "Help", icon: "🛠" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 export default function BottomNav() {
   return (
     <nav className="fixed bottom-4 left-1/2 z-50 w-[min(95vw,46rem)] -translate-x-1/2 rounded-3xl border border-white/10 bg-black/80 p-3 shadow-2xl shadow-black/40 backdrop-blur-xl">
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         {nav.map((item) => (
           <Link
             key={item.href}

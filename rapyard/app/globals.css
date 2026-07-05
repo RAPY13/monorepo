@@ -96,6 +96,18 @@ h2 {
   animation: gateReveal 0.8s ease-out both;
 }
 
+.badge-founder {
+  padding: 4px 8px;
+  background: #000;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
 @keyframes gateReveal {
   from {
     opacity: 0;

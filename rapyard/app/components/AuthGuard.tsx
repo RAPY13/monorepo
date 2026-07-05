@@ -2,19 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const authCookie = document.cookie.split("; ").find((cookie) => cookie.trim().startsWith("rapyard-auth="));
-    if (!authCookie) {
-      router.replace("/gate");
-      return;
+    let cancelled = false;
+
+    async function verify() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (cancelled) {
+        return;
+      }
+
+      const authCookie = document.cookie.split("; ").find((cookie) => cookie.trim().startsWith("rapyard-auth="));
+
+      if (!user && !authCookie) {
+        router.replace("/gate");
+        return;
+      }
+
+      setIsLoading(false);
     }
 
-    setIsLoading(false);
+    void verify();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   if (isLoading) {
