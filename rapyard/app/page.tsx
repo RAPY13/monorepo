@@ -8,7 +8,7 @@ import AuthErrorBanner from "@/app/components/AuthErrorBanner";
 export default function Home() {
   return (
     <>
-      <Suspense>
+      <Suspense fallback={null}>
         <AuthErrorBanner />
       </Suspense>
       <Hero />

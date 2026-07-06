@@ -7,19 +7,18 @@ const OTP_ERROR_MESSAGES: Record<string, string> = {
   otp_disabled: "Magic link sign-in is not available. Please contact support.",
 };
 
+const FALLBACK_MESSAGE = "Sign-in failed. Please try again.";
+
 export default function AuthErrorBanner() {
   const searchParams = useSearchParams();
 
   const errorCode = searchParams.get("error_code");
-  const errorDescription = searchParams.get("error_description");
 
   if (!errorCode) {
     return null;
   }
 
-  const message =
-    OTP_ERROR_MESSAGES[errorCode] ??
-    (errorDescription ? decodeURIComponent(errorDescription) : "Sign-in failed. Please try again.");
+  const message = OTP_ERROR_MESSAGES[errorCode] ?? FALLBACK_MESSAGE;
 
   return (
     <div
