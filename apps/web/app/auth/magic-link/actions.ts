@@ -10,12 +10,19 @@ export async function sendMagicLink(formData: FormData) {
     redirect("/auth/magic-link?error=invalid_email");
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) {
+    redirect(
+      `/auth/magic-link?error=${encodeURIComponent("NEXT_PUBLIC_SITE_URL is not set")}`,
+    );
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/auth/confirm`,
+      emailRedirectTo: `${siteUrl}/auth/confirm`,
     },
   });
 
