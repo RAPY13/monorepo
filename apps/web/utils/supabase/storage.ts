@@ -6,8 +6,8 @@ export async function uploadFile(
   filePath: string,
   file: File | Blob | ArrayBuffer | ArrayBufferView,
   options?: { cacheControl?: string; upsert?: boolean },
-): Promise<void> {
-  const { error } = await supabase.storage
+) {
+  const { data, error } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {
       cacheControl: options?.cacheControl ?? "3600",
@@ -15,4 +15,6 @@ export async function uploadFile(
     });
 
   if (error) throw error;
+
+  return data;
 }
