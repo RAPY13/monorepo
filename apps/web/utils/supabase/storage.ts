@@ -14,7 +14,11 @@ export async function uploadToBucket(
     throw new Error("Not authenticated");
   }
 
-  const safeName = file.name.replace(/\s+/g, "-");
+  const safeName = file.name
+    .replace(/[/\\]+/g, "")
+    .replace(/\.{2,}/g, ".")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9.\-_]/g, "_");
   const filePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
 
   const { data, error } = await supabase.storage
