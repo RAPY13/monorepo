@@ -1,7 +1,19 @@
-export default function Home() {
+import { createClient } from "@/utils/supabase/server";
+
+export default async function Page() {
+  const supabase = await createClient();
+
+  const { data: todos, error } = await supabase.from("todos").select();
+
+  if (error) {
+    console.error(error);
+  }
+
   return (
-    <main className='min-h-screen bg-black text-white flex items-center justify-center'>
-      <h1 className='text-4xl font-bold text-yellow-400'>RapYard Web</h1>
-    </main>
+    <ul>
+      {todos?.map((todo) => (
+        <li key={todo.id}>{todo.name}</li>
+      ))}
+    </ul>
   );
 }
