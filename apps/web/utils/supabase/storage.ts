@@ -1,20 +1,39 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "./client";
 
-export async function uploadFile(
-  supabase: SupabaseClient,
+const supabase = createClient();
+
+export async function uploadToBucket(
   bucket: string,
-  filePath: string,
-  file: File | Blob | ArrayBuffer | ArrayBufferView,
-  options?: { cacheControl?: string; upsert?: boolean },
-) {
+  file: File,
+): Promise<{ path: string; url: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const safeName = file.name.replace(/\s+/g, "-");
+  const filePath = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {
-      cacheControl: options?.cacheControl ?? "3600",
-      upsert: options?.upsert ?? false,
+      cacheControl: "3600",
+      upsert: false,
     });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-  return data;
+  const { data: publicUrl } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(data.path);
+
+  return {
+    path: data.path,
+    url: publicUrl.publicUrl,
+  };
 }
