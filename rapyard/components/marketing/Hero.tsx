@@ -2,7 +2,7 @@ import Smoke from "@/components/effects/Smoke";
 import Image from "next/image";
 import Link from "next/link";
 
-import WaitlistForm from "./WaitlistForm";
+import WaitlistForm from "@/components/marketing/WaitlistForm";
 
 export default function Hero() {
   return (

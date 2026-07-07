@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import FounderCounter from "./FounderCounter";
+import FounderCounter from "@/components/marketing/FounderCounter";
 
 export default function FounderProgram() {
   return (

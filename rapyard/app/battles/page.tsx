@@ -1,4 +1,4 @@
-import BottomNav from "@/app/components/BottomNav";
+import BottomNav from "@/components/navigation/BottomNav";
 
 export default function BattlesPage() {
   return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import AuthGuard from "@/app/components/AuthGuard";
-import BottomNav from "@/app/components/BottomNav";
+import AuthGuard from "@/components/auth/AuthGuard";
+import BottomNav from "@/components/navigation/BottomNav";
 import FoundersBadge from "@/components/ui/FoundersBadge";
 
 const feedHighlights = [

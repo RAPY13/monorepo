@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-
-type ProfileRow = {
-  username: string | null;
-  avatar_url: string | null;
-  badges: string[] | null;
-};
+import type { ProfileRow } from "@/types/profile";
 
 export default function ProfileIdentity() {
   const [loading, setLoading] = useState(true);

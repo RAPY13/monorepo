@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import AuthGuard from "@/app/components/AuthGuard";
-import BottomNav from "@/app/components/BottomNav";
+import AuthGuard from "@/components/auth/AuthGuard";
+import BottomNav from "@/components/navigation/BottomNav";
 import { createClient } from "@/utils/supabase/client";
 import { getOnboardingProfile, type YardRole } from "@/lib/onboarding-profile";
 import {
