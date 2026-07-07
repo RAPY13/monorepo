@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       .bind(ip, windowStart)
       .first<{ attempts: number }>();
 
-    const attempts = Number(row?.attempts ?? 0);
+    const attempts = parseInt(String(row?.attempts ?? 0), 10) || 0;
 
     if (attempts >= MAX_ATTEMPTS) {
       return NextResponse.json(

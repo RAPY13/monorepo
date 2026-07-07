@@ -6,7 +6,9 @@ import { createClient } from "@/utils/supabase/client";
 import { ensureProfileRow } from "@/lib/onboarding-profile";
 
 const AUTH_COOKIE =
-  "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
+  `rapyard-auth=1; path=/; max-age=31536000; samesite=lax${
+    process.env.NODE_ENV === "production" ? "; secure" : ""
+  }`;
 
 const REDIRECT_DELAY_MS = 2500;
 
@@ -76,11 +78,15 @@ function AuthConfirmInner() {
         return;
       }
 
-      document.cookie = AUTH_COOKIE;
-
-      await ensureProfileRow(supabase, user);
+      try {
+        await ensureProfileRow(supabase, user);
+      } catch (err) {
+        console.warn("[auth/confirm] ensureProfileRow error", err);
+      }
 
       if (cancelled) return;
+
+      document.cookie = AUTH_COOKIE;
 
       setMessage("Email confirmed! Welcome to RapYard.");
       router.replace("/gate");
