@@ -29,7 +29,7 @@ function AuthConfirmInner() {
 
         if (user) {
           document.cookie =
-            "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
+            "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
           router.replace("/gate");
           return;
         }
@@ -68,7 +68,7 @@ function AuthConfirmInner() {
       }
 
       document.cookie =
-        "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
+        "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
 
       await ensureProfileRow(supabase, user);
 

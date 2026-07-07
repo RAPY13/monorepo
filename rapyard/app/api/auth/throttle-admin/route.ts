@@ -47,6 +47,11 @@ export async function POST(request: Request) {
   const windowStart = now - WINDOW_MS;
 
   try {
+    // NOTE: there is an inherent check-then-insert race for highly concurrent
+    // requests on the same IP.  For this use-case (admin login throttle) the
+    // small window of allowing one or two extra attempts per burst is
+    // acceptable.  A production hardening path would use a D1 atomic upsert
+    // or the Cloudflare Rate Limiting API instead.
     const row = await db
       .prepare(
         "SELECT COUNT(*) AS attempts FROM auth_throttle WHERE ip = ? AND created_at > ?"
