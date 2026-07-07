@@ -5,6 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { ensureProfileRow } from "@/lib/onboarding-profile";
 
+const AUTH_COOKIE =
+  "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
+
+const REDIRECT_DELAY_MS = 2500;
+
 function AuthConfirmInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -12,6 +17,11 @@ function AuthConfirmInner() {
 
   useEffect(() => {
     let cancelled = false;
+
+    function failRedirect(msg: string, delayMs = REDIRECT_DELAY_MS) {
+      setMessage(msg);
+      setTimeout(() => router.replace("/?openModal=1"), delayMs);
+    }
 
     async function confirm() {
       const tokenHash = searchParams.get("token_hash");
@@ -28,14 +38,12 @@ function AuthConfirmInner() {
         if (cancelled) return;
 
         if (user) {
-          document.cookie =
-            "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
+          document.cookie = AUTH_COOKIE;
           router.replace("/gate");
           return;
         }
 
-        setMessage("Invalid confirmation link. Redirecting…");
-        setTimeout(() => router.replace("/?openModal=1"), 2500);
+        failRedirect("Invalid confirmation link. Redirecting…");
         return;
       }
 
@@ -48,10 +56,9 @@ function AuthConfirmInner() {
 
       if (error) {
         console.error("[auth/confirm] verifyOtp failed", error.message);
-        setMessage(
+        failRedirect(
           "Confirmation failed or link expired. Please request a new login link."
         );
-        setTimeout(() => router.replace("/?openModal=1"), 2500);
         return;
       }
 
@@ -62,13 +69,14 @@ function AuthConfirmInner() {
       if (cancelled) return;
 
       if (!user) {
-        setMessage("Session could not be established. Please try again.");
-        setTimeout(() => router.replace("/?openModal=1"), 2000);
+        failRedirect(
+          "Session could not be established. Please try again.",
+          2000
+        );
         return;
       }
 
-      document.cookie =
-        "rapyard-auth=1; path=/; max-age=31536000; samesite=lax; secure";
+      document.cookie = AUTH_COOKIE;
 
       await ensureProfileRow(supabase, user);
 
