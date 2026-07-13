@@ -21,6 +21,10 @@
 		{
 			"pattern": "www.rapyard.club",
 			"custom_domain": true
+		},
+		{
+			"pattern": "rapyard.app",
+			"custom_domain": true
 		}
 	],
 	"services": [

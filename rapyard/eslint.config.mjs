@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Exclude package/dist, node_modules, and build artifacts
+    "node_modules/**",
+    "package/**",
+    "package/dist/**",
+    ".open-next/**",
   ]),
 ]);
 

@@ -45,3 +45,25 @@ Add these repository secrets in GitHub before running the workflow:
 - `CLOUDFLARE_ACCOUNT_ID`
 
 The workflow can also be run manually from the **Actions** tab via `workflow_dispatch`.
+
+## Auth Throttle Admin API
+
+The app includes an authenticated endpoint to inspect and clean up email-login throttle state.
+
+Set this environment variable before using the endpoint:
+
+- `AUTH_THROTTLE_ADMIN_KEY`
+
+Send the key as either:
+
+- `Authorization: Bearer <key>`
+- `x-throttle-admin-key: <key>`
+
+Endpoints:
+
+- `GET /api/auth/throttle-admin`
+	- Returns active throttle counts by kind.
+- `GET /api/auth/throttle-admin?includeKeys=1&limit=50`
+	- Returns masked active entries for inspection (no raw email or IP values).
+- `DELETE /api/auth/throttle-admin`
+	- Removes expired throttle rows.

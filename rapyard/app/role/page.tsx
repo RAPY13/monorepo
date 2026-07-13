@@ -44,7 +44,7 @@ export default function RolePage() {
       }
 
       if (profile?.role) {
-        router.replace("/tenant");
+        router.replace("/profile");
         return;
       }
 
@@ -92,7 +92,7 @@ export default function RolePage() {
       return;
     }
 
-    router.push("/tenant");
+    router.push("/profile");
   }
 
   if (loading) {

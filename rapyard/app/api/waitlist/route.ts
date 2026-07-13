@@ -1,218 +1,145 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const FOUNDERS_LIMIT = 500;
 
-type DbStatement = {
-  bind: (...values: unknown[]) => DbStatement;
-  first: <T>() => Promise<T | null>;
-  run: () => Promise<unknown>;
-};
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_KEY;
 
-type DbLike = {
-  prepare: (query: string) => DbStatement;
-};
-
-async function getDb() {
-  try {
-    const { env } = await getCloudflareContext({ async: true });
-    return (env as CloudflareEnv & { DB?: DbLike }).DB ?? null;
-  } catch (error) {
-    console.error("[waitlist] Cloudflare context unavailable", error);
+  if (!supabaseUrl || !supabaseServiceKey) {
     return null;
   }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
 }
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function normalizeEmail(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
-/**
- * GET /api/waitlist
- * Returns current Founder Program statistics.
- */
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function getFounderStats(supabase: SupabaseClient) {
+  const { count, error } = await supabase
+    .from("waitlist")
+    .select("id", { count: "exact", head: true })
+    .eq("is_founder", true);
+
+  if (error) {
+    throw error;
+  }
+
+  const foundersClaimed = Number(count ?? 0);
+  const foundersRemaining = Math.max(FOUNDERS_LIMIT - foundersClaimed, 0);
+  const progress = Math.min(Math.round((foundersClaimed / FOUNDERS_LIMIT) * 100), 100);
+
+  return {
+    foundersClaimed,
+    foundersLimit: FOUNDERS_LIMIT,
+    foundersRemaining,
+    progress,
+  };
+}
+
+async function getFounderNumber(supabase: SupabaseClient, email: string) {
+  const { data, error } = await supabase
+    .from("waitlist")
+    .select("email")
+    .eq("is_founder", true)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const rows = (data ?? []) as Array<{ email: string | null }>;
+  const index = rows.findIndex((row) => normalizeEmail(row.email) === email);
+  return index >= 0 ? index + 1 : null;
+}
+
 export async function GET() {
-  const db = await getDb();
+  const supabase = getSupabaseAdminClient();
 
-  if (!db) {
+  if (!supabase) {
     return NextResponse.json(
-      {
-        foundersClaimed: 0,
-        foundersLimit: FOUNDERS_LIMIT,
-        foundersRemaining: FOUNDERS_LIMIT,
-        progress: 0,
-      },
-      { status: 200 }
+      { error: "Missing Supabase server env vars for waitlist API." },
+      { status: 500 }
     );
   }
 
   try {
-    const row = await db
-      .prepare("SELECT COUNT(*) AS total FROM waitlist")
-      .first<{ total: number }>();
-
-    const foundersClaimed = Number(row?.total ?? 0);
-
-    return NextResponse.json({
-      foundersClaimed,
-      foundersLimit: FOUNDERS_LIMIT,
-      foundersRemaining: Math.max(
-        0,
-        FOUNDERS_LIMIT - foundersClaimed
-      ),
-      progress: Math.min(
-        100,
-        (foundersClaimed / FOUNDERS_LIMIT) * 100
-      ),
-    });
-  } catch (error) {
-    console.error("[waitlist] GET failed", error);
-
+    const stats = await getFounderStats(supabase);
+    return NextResponse.json(stats);
+  } catch {
     return NextResponse.json(
-      { error: "Unable to load Founder statistics." },
+      { error: "Unable to load waitlist stats right now." },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/waitlist
- * Reserve a Founder Badge.
- */
-export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}));
+export async function POST(req: Request) {
+  const supabase = getSupabaseAdminClient();
 
-  const email =
-    typeof body?.email === "string"
-      ? body.email.trim().toLowerCase()
-      : "";
-
-  if (!email) {
+  if (!supabase) {
     return NextResponse.json(
-      { error: "Email is required." },
-      { status: 400 }
+      { error: "Missing Supabase server env vars for waitlist API." },
+      { status: 500 }
     );
   }
 
-  if (!isValidEmail(email)) {
+  const body = (await req.json().catch(() => ({}))) as { email?: string };
+  const email = normalizeEmail(body.email);
+
+  if (!email || !isValidEmail(email)) {
     return NextResponse.json(
-      { error: "Please enter a valid email address." },
+      { error: "Enter a valid email address." },
       { status: 400 }
-    );
-  }
-
-  const db = await getDb();
-
-  if (!db) {
-    return NextResponse.json(
-      {
-        error:
-          "Founder reservations are temporarily unavailable in this local mode.",
-      },
-      { status: 503 }
     );
   }
 
   try {
-    // Has this email already joined?
-    const existing = await db
-      .prepare("SELECT id FROM waitlist WHERE email = ?")
-      .bind(email)
-      .first();
+    const { data: existing, error: existingError } = await supabase
+      .from("waitlist")
+      .select("email")
+      .eq("email", email)
+      .maybeSingle();
 
-    // Current founder count
-    const row = await db
-      .prepare("SELECT COUNT(*) AS total FROM waitlist")
-      .first<{ total: number }>();
-
-    const foundersClaimed = Number(row?.total ?? 0);
-
-    if (existing) {
-      return NextResponse.json({
-        success: true,
-        alreadyJoined: true,
-        message: "🔥 You're already part of the Founders Program.",
-        founderNumber: null,
-        isFounder: foundersClaimed <= FOUNDERS_LIMIT,
-        foundersClaimed,
-        foundersLimit: FOUNDERS_LIMIT,
-        foundersRemaining: Math.max(
-          0,
-          FOUNDERS_LIMIT - foundersClaimed
-        ),
-        progress: Math.min(
-          100,
-          (foundersClaimed / FOUNDERS_LIMIT) * 100
-        ),
-      });
+    if (existingError) {
+      throw existingError;
     }
 
-    const founderNumber = foundersClaimed + 1;
-    const isFounder = founderNumber <= FOUNDERS_LIMIT;
-
-    await db
-      .prepare(
-        `
-        INSERT INTO waitlist
-        (
-          email,
-          source,
-          status,
-          is_founder
-        )
-        VALUES
-        (?, ?, ?, ?)
-      `
-      )
-      .bind(
+    if (!existing) {
+      const { error: insertError } = await supabase.from("waitlist").insert({
         email,
-        "gate",
-        "pending",
-        isFounder ? 1 : 0
-      )
-      .run();
+        source: "gate",
+        status: "pending",
+        is_founder: true,
+      });
 
-    return NextResponse.json(
-      {
-        success: true,
-
-        message: isFounder
-          ? "🔥 Welcome, Founder. Your Founder Badge has been reserved."
-          : "Welcome to RapYard.",
-
-        founderNumber: isFounder ? founderNumber : null,
-
-        isFounder,
-
-        foundersClaimed: founderNumber,
-
-        foundersLimit: FOUNDERS_LIMIT,
-
-        foundersRemaining: Math.max(
-          0,
-          FOUNDERS_LIMIT - founderNumber
-        ),
-
-        progress: Math.min(
-          100,
-          (founderNumber / FOUNDERS_LIMIT) * 100
-        ),
-      },
-      {
-        status: 201,
+      if (insertError && insertError.code !== "23505") {
+        throw insertError;
       }
-    );
-  } catch (error) {
-    console.error("[waitlist] POST failed", error);
+    }
 
+    const [stats, founderNumber] = await Promise.all([
+      getFounderStats(supabase),
+      getFounderNumber(supabase, email),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      alreadyJoined: Boolean(existing),
+      founderNumber,
+      ...stats,
+    });
+  } catch {
     return NextResponse.json(
-      {
-        error:
-          "Unable to reserve your Founder Badge. Please try again.",
-      },
-      {
-        status: 500,
-      }
+      { error: "Unable to reserve your Founder Badge right now." },
+      { status: 500 }
     );
   }
 }

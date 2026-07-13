@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "../../utils/supabase/client";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -15,9 +15,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const supabase = createClient();
       const {
         data: { user },
+        error,
       } = await supabase.auth.getUser();
 
       if (cancelled) {
+        return;
+      }
+
+      if (error) {
+        console.error(error);
+        router.replace("/gate");
         return;
       }
 

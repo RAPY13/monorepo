@@ -1,0 +1,16 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
+export default function BottomNav() {
+  const router = useRouter();
+
+  return (
+    <nav className="border-t border-zinc-800 py-4 bg-zinc-900 flex justify-around text-xl">
+      <button onClick={() => router.push("/feed")}>🏠</button>
+      <button onClick={() => router.push("/booth")}>🎙</button>
+      <button onClick={() => router.push("/battles")}>🥊</button>
+      <button onClick={() => router.push("/profile")}>👤</button>
+    </nav>
+  );
+}

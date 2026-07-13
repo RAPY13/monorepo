@@ -29,6 +29,11 @@
 .wrangler/
 .tmp-opennext-cloudflare-readme.json
 .npm-cache/
+.tmp/
+tmp/
+logs/
+*.log
+deploy*.log
 deploy-fresh.log
 open-next-*.tgz
 open-next-package.json
