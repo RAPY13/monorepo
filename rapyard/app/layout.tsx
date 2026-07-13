@@ -1,19 +1,12 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import FlowRouter from "./flow-router";
 
-export const metadata: Metadata = {
-  title: "RapYard",
-  description: "Creators build the yard.",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <FlowRouter />
+        {children}
+      </body>
     </html>
   );
 }

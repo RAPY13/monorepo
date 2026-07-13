@@ -9,7 +9,7 @@ type Props = {
   enterYard: (e: FormEvent<HTMLFormElement>) => Promise<void>;
 };
 
-export default function WaitlistModal({ email, setEmail, onClose, enterYard }: Props) {
+export default function AccountModal({ email, setEmail, onClose, enterYard }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
@@ -47,7 +47,7 @@ export default function WaitlistModal({ email, setEmail, onClose, enterYard }: P
               type="submit"
               className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-black"
             >
-              Join Waitlist
+              Create Account
             </button>
           </div>
         </form>
