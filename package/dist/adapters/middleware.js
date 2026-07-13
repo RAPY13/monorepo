@@ -1,0 +1,84 @@
+import { debug, error } from "../adapters/logger";
+import { createGenericHandler } from "../core/createGenericHandler";
+import { resolveIncrementalCache, resolveQueue, resolveTagCache, } from "../core/resolve";
+import routingHandler from "../core/routingHandler";
+const resolveOriginResolver = () => {
+    const openNextParams = globalThis.openNextConfig.middleware;
+    if (typeof openNextParams?.originResolver === "function") {
+        return openNextParams.originResolver();
+    }
+    else {
+        return Promise.resolve({
+            name: "env",
+            resolve: async (_path) => {
+                try {
+                    const origin = JSON.parse(process.env.OPEN_NEXT_ORIGIN ?? "{}");
+                    for (const [key, value] of Object.entries(globalThis.openNextConfig.functions ?? {}).filter(([key]) => key !== "default")) {
+                        if (value.patterns.some((pattern) => {
+                            // Convert cloudfront pattern to regex
+                            return new RegExp(
+                            // transform glob pattern to regex
+                            "/" +
+                                pattern
+                                    .replace(/\*\*/g, "(.*)")
+                                    .replace(/\*/g, "([^/]*)")
+                                    .replace(/\//g, "\\/")
+                                    .replace(/\?/g, ".")).test(_path);
+                        })) {
+                            debug("Using origin", key, value.patterns);
+                            return origin[key];
+                        }
+                    }
+                    if (_path.startsWith("/_next/image") && origin["imageOptimizer"]) {
+                        debug("Using origin", "imageOptimizer", _path);
+                        return origin["imageOptimizer"];
+                    }
+                    if (origin["default"]) {
+                        debug("Using default origin", origin["default"], _path);
+                        return origin["default"];
+                    }
+                    return false;
+                }
+                catch (e) {
+                    error("Error while resolving origin", e);
+                    return false;
+                }
+            },
+        });
+    }
+};
+globalThis.internalFetch = fetch;
+const defaultHandler = async (internalEvent) => {
+    const originResolver = await resolveOriginResolver();
+    //#override includeCacheInMiddleware
+    globalThis.tagCache = await resolveTagCache(globalThis.openNextConfig.middleware?.override?.tagCache);
+    globalThis.queue = await resolveQueue(globalThis.openNextConfig.middleware?.override?.queue);
+    globalThis.incrementalCache = await resolveIncrementalCache(globalThis.openNextConfig.middleware?.override?.incrementalCache);
+    //#endOverride
+    const result = await routingHandler(internalEvent);
+    if ("internalEvent" in result) {
+        debug("Middleware intercepted event", internalEvent);
+        let origin = false;
+        if (!result.isExternalRewrite) {
+            origin = await originResolver.resolve(result.internalEvent.rawPath);
+        }
+        return {
+            type: "middleware",
+            internalEvent: result.internalEvent,
+            isExternalRewrite: result.isExternalRewrite,
+            origin,
+            isISR: result.isISR,
+        };
+    }
+    else {
+        debug("Middleware response", result);
+        return result;
+    }
+};
+export const handler = await createGenericHandler({
+    handler: defaultHandler,
+    type: "middleware",
+});
+export default {
+    fetch: handler,
+};

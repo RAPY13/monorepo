@@ -1,0 +1,14 @@
+import SceneTransition from "@/components/SceneTransition";
+
+export default function FounderPage() {
+  return (
+    <SceneTransition>
+      <div className="grit"></div>   {/* ← ADD IT RIGHT HERE */}
+
+      <div className="founder-room">
+        <h1 className="title">Founder Badge Unlocked</h1>
+        {/* Your cinematic GSAP founder scene */}
+      </div>
+    </SceneTransition>
+  );
+}
