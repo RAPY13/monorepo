@@ -1,22 +1,5 @@
-name = "rapyard-worker"
-main = ".open-next/worker.js"
-compatibility_date = "2026-07-23"
-
-compatibility_flags = [
-  "nodejs_compat",
-  "global_fetch_strictly_public"
-]
-
-[assets]
-directory = ".open-next/assets"
-binding = "ASSETS"
-
-[images]
-binding = "IMAGES"
-
-[services]
-binding = "WORKER_SELF_REFERENCE"
-service = "rapyard-worker"
-
 [build]
 command = "pnpm build"
+
+[build.output]
+directory = ".open-next/assets"
