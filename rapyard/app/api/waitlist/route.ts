@@ -18,7 +18,7 @@ async function getDb() {
     const { env } = await getCloudflareContext({ async: true });
     return (env as CloudflareEnv & { DB?: DbLike }).DB ?? null;
   } catch (error) {
-    console.error("[waitlist] Cloudflare context unavailable", error);
+    console.error("[Account] Cloudflare context unavailable", error);
     return null;
   }
 }
@@ -28,7 +28,7 @@ function isValidEmail(email: string) {
 }
 
 /**
- * GET /api/waitlist
+ * GET /api/Account
  * Returns current Founder Program statistics.
  */
 export async function GET() {
@@ -48,7 +48,7 @@ export async function GET() {
 
   try {
     const row = await db
-      .prepare("SELECT COUNT(*) AS total FROM waitlist")
+      .prepare("SELECT COUNT(*) AS total FROM Account")
       .first<{ total: number }>();
 
     const foundersClaimed = Number(row?.total ?? 0);
@@ -66,7 +66,7 @@ export async function GET() {
       ),
     });
   } catch (error) {
-    console.error("[waitlist] GET failed", error);
+    console.error("[Account] GET failed", error);
 
     return NextResponse.json(
       { error: "Unable to load Founder statistics." },
@@ -76,7 +76,7 @@ export async function GET() {
 }
 
 /**
- * POST /api/waitlist
+ * POST /api/Account
  * Reserve a Founder Badge.
  */
 export async function POST(request: Request) {
@@ -116,13 +116,13 @@ export async function POST(request: Request) {
   try {
     // Has this email already joined?
     const existing = await db
-      .prepare("SELECT id FROM waitlist WHERE email = ?")
+      .prepare("SELECT id FROM Account WHERE email = ?")
       .bind(email)
       .first();
 
     // Current founder count
     const row = await db
-      .prepare("SELECT COUNT(*) AS total FROM waitlist")
+      .prepare("SELECT COUNT(*) AS total FROM Account")
       .first<{ total: number }>();
 
     const foundersClaimed = Number(row?.total ?? 0);
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     await db
       .prepare(
         `
-        INSERT INTO waitlist
+        INSERT INTO Account
         (
           email,
           source,
@@ -203,12 +203,12 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("[waitlist] POST failed", error);
+    console.error("[Account] POST failed", error);
 
     return NextResponse.json(
       {
         error:
-          "Unable to reserve your Founder Badge. Please try again.",
+          "Unable to Create Your Account. Please try again.",
       },
       {
         status: 500,

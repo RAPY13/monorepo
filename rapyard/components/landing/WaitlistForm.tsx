@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 
-type WaitlistResponse = {
+type AccountResponse = {
   success?: boolean;
   message?: string;
   error?: string;
@@ -14,11 +14,11 @@ type WaitlistResponse = {
   progress?: number;
 };
 
-export default function WaitlistForm() {
+export default function AccountForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<WaitlistResponse | null>(null);
+  const [success, setSuccess] = useState<AccountResponse | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,7 +32,7 @@ export default function WaitlistForm() {
     setError("");
 
     try {
-      const response = await fetch("/api/waitlist", {
+      const response = await fetch("/api/Account", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,11 +40,11 @@ export default function WaitlistForm() {
         body: JSON.stringify({ email: email.trim() }),
       });
 
-      const data = (await response.json().catch(() => ({}))) as WaitlistResponse;
+      const data = (await response.json().catch(() => ({}))) as AccountResponse;
 
       if (!response.ok) {
         setSuccess(null);
-        setError(data.error ?? data.message ?? "Unable to reserve your Founder Badge.");
+        setError(data.error ?? data.message ?? "Unable to Create Your Account.");
         return;
       }
 
@@ -52,7 +52,7 @@ export default function WaitlistForm() {
       setEmail("");
 
       window.dispatchEvent(
-        new CustomEvent("waitlist:updated", {
+        new CustomEvent("Account:updated", {
           detail: {
             foundersClaimed: data.foundersClaimed,
             foundersLimit: data.foundersLimit,

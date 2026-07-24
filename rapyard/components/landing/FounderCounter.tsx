@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import ProgressBar from "./ProgressBar";
+import ProgressBar from "@/components/ui/ProgressBar";
 
-type WaitlistStats = {
+type AccountStats = {
   foundersClaimed: number;
   foundersLimit: number;
   foundersRemaining: number;
   progress: number;
 };
 
-const EMPTY_STATS: WaitlistStats = {
+const EMPTY_STATS: AccountStats = {
   foundersClaimed: 0,
   foundersLimit: 500,
   foundersRemaining: 500,
@@ -19,12 +19,12 @@ const EMPTY_STATS: WaitlistStats = {
 };
 
 export default function FounderCounter() {
-  const [stats, setStats] = useState<WaitlistStats>(EMPTY_STATS);
+  const [stats, setStats] = useState<AccountStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
 
   const refreshStats = useCallback(async () => {
     try {
-      const res = await fetch("/api/waitlist", {
+      const res = await fetch("/api/Account", {
         method: "GET",
         cache: "no-store",
       });
@@ -33,7 +33,7 @@ export default function FounderCounter() {
         return;
       }
 
-      const next = (await res.json()) as WaitlistStats;
+      const next = (await res.json()) as AccountStats;
       setStats({
         foundersClaimed: Number(next.foundersClaimed ?? 0),
         foundersLimit: Number(next.foundersLimit ?? 500),
@@ -52,8 +52,8 @@ export default function FounderCounter() {
       void refreshStats();
     }, 15000);
 
-    const handleWaitlistUpdated = (event: Event) => {
-      const customEvent = event as CustomEvent<Partial<WaitlistStats>>;
+    const handleAccountUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<Partial<AccountStats>>;
       const detail = customEvent.detail;
 
       if (!detail) {
@@ -69,11 +69,11 @@ export default function FounderCounter() {
       }));
     };
 
-    window.addEventListener("waitlist:updated", handleWaitlistUpdated as EventListener);
+    window.addEventListener("Account:updated", handleAccountUpdated as EventListener);
 
     return () => {
       window.clearInterval(intervalId);
-      window.removeEventListener("waitlist:updated", handleWaitlistUpdated as EventListener);
+      window.removeEventListener("Account:updated", handleAccountUpdated as EventListener);
     };
   }, [refreshStats]);
 

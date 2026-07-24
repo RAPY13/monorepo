@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function useWaitlist(initialEmail = "") {
+export default function useAccount(initialEmail = "") {
   const router = useRouter();
   const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export default function useWaitlist(initialEmail = "") {
     setError("");
 
     try {
-      const res = await fetch("/api/waitlist", {
+      const res = await fetch("/api/Account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

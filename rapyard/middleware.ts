@@ -1,30 +1,38 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextRequest, NextResponse } from "next/server";
 
-const protectedPrefixes = ["/role", "/tenant", "/feed", "/profile", "/help"];
+export async function middleware(request: NextRequest) {
+  // Call your Cloudflare SSR Worker
+  const res = await fetch("https://rapyard.club/auth-ssr", {
+    method: "GET",
+    headers: request.headers
+  });
 
-function isProtectedPath(pathname: string) {
-  return protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-}
+  const { user, session } = await res.json();
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (!isProtectedPath(pathname)) {
-    return NextResponse.next();
+  // No user → send to landing
+  if (!user) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const authCookie = request.cookies.get("rapyard-auth")?.value;
+  // Founder-only gate
+  if (request.nextUrl.pathname.startsWith("/founder-room")) {
+    if (user.user_metadata.role !== "founder") {
+      return NextResponse.redirect(new URL("/founder-required", request.url));
+    }
+  }
 
-  if (!authCookie) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/gate";
-    return NextResponse.redirect(url);
+  // Flow-based routing
+  switch (user.user_metadata.flow_stage) {
+    case "CreateAccount":
+      return NextResponse.redirect(new URL("/signup", request.url));
+    case "VerifyEmail":
+      return NextResponse.redirect(new URL("/verify", request.url));
+    case "FounderBadge":
+      return NextResponse.redirect(new URL("/founder", request.url));
+    case "PickYourLane":
+      return NextResponse.redirect(new URL("/lane", request.url));
   }
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/role/:path*", "/tenant/:path*", "/feed/:path*", "/profile/:path*", "/help/:path*"],
-};

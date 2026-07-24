@@ -1,7 +1,7 @@
-import Hero from "@/app/components/Hero";
-import FounderProgram from "@/app/components/FounderProgram";
-import WhyRapYard from "@/app/components/WhyRapYard";
-import ClosingSection from "@/app/components/ClosingSection";
+import Hero from "@/components/landing/Hero";
+import FounderProgram from "@/components/landing/FounderProgram";
+import WhyRapYard from "@/components/landing/WhyRapYard";
+import ClosingSection from "@/components/landing/ClosingSection";
 
 export default function Home() {
   return (
