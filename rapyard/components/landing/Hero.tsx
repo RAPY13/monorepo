@@ -2,7 +2,7 @@ import Smoke from "@/components/effects/Smoke";
 import Image from "next/image";
 import Link from "next/link";
 
-import AccountForm from "./AccountForm";
+import WaitlistForm from "./WaitlistForm";
 
 export default function Hero() {
   return (
@@ -105,7 +105,7 @@ export default function Hero() {
         </div>
 
         <div className="mt-24 md:mt-28">
-          <AccountForm />
+          <WaitlistForm />
         </div>
       </div>
     </section>
