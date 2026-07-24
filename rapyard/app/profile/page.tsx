@@ -1,6 +1,6 @@
-import AuthGuard from "@/app/components/AuthGuard";
-import BottomNav from "@/app/components/BottomNav";
-import ProfileIdentity from "@/app/components/ProfileIdentity";
+import AuthGuard from "@/components/layout/AuthGuard";
+import BottomNav from "@/components/layout/BottomNav";
+import ProfileIdentity from "@/components/profile/ProfileIdentity";
 import FoundersBadge from "@/components/ui/FoundersBadge";
 
 export default function ProfilePage() {
