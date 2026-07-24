@@ -1,0 +1,15 @@
+{
+  "name": "rapyard-monorepo",
+  "private": true,
+  "packageManager": "pnpm@11.15.1",
+  "scripts": {
+    "dev": "pnpm --filter ./apps/web dev",
+    "build": "open-next build ./apps/web",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "open-next": "^2.3.0",
+    "wrangler": "^4.113.0",
+    "turbo": "^2.0.14"
+  }
+}
