@@ -8,3 +8,6 @@ tsconfig.tsbuildinfo
 
 # Env
 .env*
+
+# Dev Vars
+.dev*
