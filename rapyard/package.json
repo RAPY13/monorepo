@@ -1,40 +1,15 @@
 {
-  "name": "rapyard-club-web",
-  "version": "0.1.0",
+  "name": "rapyard-monorepo",
   "private": true,
+  "packageManager": "pnpm@11.15.1",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --webpack",
-    "cf:build": "opennextjs-cloudflare build",
-    "start": "next start",
-    "lint": "eslint",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "npm run cf:build && wrangler deploy --config wrangler.jsonc --domains rapyard.club --domains www.rapyard.club",
-    "verify:prod": "node scripts/verify-production.mjs",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
-  },
-  "dependencies": {
-    "@supabase/ssr": "^0.12.0",
-    "@supabase/supabase-js": "^2.110.0",
-    "framer-motion": "^12.42.2",
-    "gsap": "^3.15.0",
-    "lucide-react": "^1.23.0",
-    "next": "16.2.10",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "dev": "pnpm --filter ./apps/web dev",
+    "build": "open-next build ./apps/web",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.1",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "esbuild": "^0.28.1",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.10",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "wrangler": "^4.107.0"
+    "open-next": "^2.3.0",
+    "wrangler": "^4.113.0",
+    "turbo": "^2.0.14"
   }
 }

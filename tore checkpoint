@@ -1,0 +1,25 @@
+[33mf00b8fc[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;33mtag: [m[1;33mv1.0.0-launch[m[33m)[m chore: update Wrangler configuration
+[33m077437e[m Update .env.example with provided Supabase configuration
+[33mbdb6543[m ci: add GitHub Actions deploy workflow
+[33ma89f405[m feat: onboarding flow, help center, founder badges, and stable Cloudflare deploy
+[33mbfa798b[m feat: RapYard Launch Edition
+[33mab24cd8[m Large-format landing redesign, gate updates, waitlist UX, and Cloudflare deploy fixes
+[33mfdab948[m Add Supabase browser client helper
+[33mbc10994[m Update .env.example
+[33m1589ae4[m docs: add .env.example template for environment setup
+[33m6256acd[m feat(api): add dev fallback for /api/waitlist using .dev_waitlist.json when Supabase is not configured
+[33m985340e[m fix: remove duplicate enterYard and unused imports in app/page.tsx
+[33m9979cca[m feat: add useWaitlist hook and wire landing page to it
+[33m8ceafb5[m refactor: extract WaitlistModal component and use it in landing page
+[33mbf10d63[m feat(modal): open landing modal via ?openModal=1 and wire CTAs
+[33mc4d85dd[m feat(prefill): read email query on landing; CTAs push email query to prefill input
+[33mca0d5f7[m content: fix email copy to 'Use your email' on gate and landing
+[33me51cca2[m ui: wire Hero CTA to /gate and update gate email copy
+[33m043b9d3[m ui: add FoundersBadge SVG, asset, replace usages, remove legacy component
+[33mf0070db[m Integrate gritty poster background into Hero
+[33m71424f6[m Add LandingPage.png
+[33mf6daccc[m Replace ForgeGlow with Logo component and update imports
+[33m117bc89[m Add hero and effects components, update app page
+[33m5e49e83[m feat: Phase 1 foundation - The Gate landing page
+[33ma403a0d[m feat: RapYard v0.3 landing page foundation
+[33m91e410d[m[33m ([m[1;33mtag: [m[1;33mv0.1-foundation[m[33m)[m Initial clean Next.js foundation

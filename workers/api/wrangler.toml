@@ -1,0 +1,15 @@
+name = "rapyard-router"
+main = "src/router.ts"
+compatibility_date = "2026-07-23"
+
+[vars]
+SUPABASE_URL = "https://xqwyvzrwmglgrmefjrlx.supabase.co"
+SUPABASE_ANON_KEY = "sb_publishable_qhREnVE-ceS8ZBHwBUeE0A_rez4i7qQ"
+SUPABASE_JWKS_URL = "https://xqwyvzrwmglgrmefjrlx.supabase.co/auth/v1/.well-known/jwks.json"
+
+[services]
+binding = "PAGES"
+service = "rapyard-cqm"   # your Cloudflare Pages project name
+
+[routes]
+pattern = "rapyard.club/*"
