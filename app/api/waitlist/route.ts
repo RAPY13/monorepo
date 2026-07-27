@@ -1,4 +1,4 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+#import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
 
 const FOUNDERS_LIMIT = 500;
@@ -27,6 +27,15 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function founderStats(count: number) {
+  return {
+    foundersClaimed: count,
+    foundersLimit: FOUNDERS_LIMIT,
+    foundersRemaining: Math.max(0, FOUNDERS_LIMIT - count),
+    progress: Math.min(100, (count / FOUNDERS_LIMIT) * 100),
+  };
+}
+
 /**
  * GET /api/waitlist
  * Returns current Founder Program statistics.
@@ -35,15 +44,7 @@ export async function GET() {
   const db = await getDb();
 
   if (!db) {
-    return NextResponse.json(
-      {
-        foundersClaimed: 0,
-        foundersLimit: FOUNDERS_LIMIT,
-        foundersRemaining: FOUNDERS_LIMIT,
-        progress: 0,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(founderStats(0));
   }
 
   try {
@@ -53,24 +54,21 @@ export async function GET() {
 
     const foundersClaimed = Number(row?.total ?? 0);
 
-    return NextResponse.json({
-      foundersClaimed,
-      foundersLimit: FOUNDERS_LIMIT,
-      foundersRemaining: Math.max(
-        0,
-        FOUNDERS_LIMIT - foundersClaimed
-      ),
-      progress: Math.min(
-        100,
-        (foundersClaimed / FOUNDERS_LIMIT) * 100
-      ),
+    return NextResponse.json(founderStats(foundersClaimed), {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
     });
   } catch (error) {
     console.error("[waitlist] GET failed", error);
 
     return NextResponse.json(
-      { error: "Unable to load Founder statistics." },
-      { status: 500 }
+      {
+        error: "Unable to load Founder statistics.",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
@@ -80,24 +78,45 @@ export async function GET() {
  * Reserve a Founder Badge.
  */
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}));
+  let body: unknown;
+
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      {
+        error: "Invalid request body.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 
   const email =
-    typeof body?.email === "string"
-      ? body.email.trim().toLowerCase()
+    typeof (body as { email?: unknown }).email === "string"
+      ? (body as { email: string }).email.trim().toLowerCase()
       : "";
 
   if (!email) {
     return NextResponse.json(
-      { error: "Email is required." },
-      { status: 400 }
+      {
+        error: "Email is required.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
   if (!isValidEmail(email)) {
     return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 400 }
+      {
+        error: "Please enter a valid email address.",
+      },
+      {
+        status: 400,
+      }
     );
   }
 
@@ -109,18 +128,18 @@ export async function POST(request: Request) {
         error:
           "Founder reservations are temporarily unavailable in this local mode.",
       },
-      { status: 503 }
+      {
+        status: 503,
+      }
     );
   }
 
   try {
-    // Has this email already joined?
     const existing = await db
       .prepare("SELECT id FROM waitlist WHERE email = ?")
       .bind(email)
       .first();
 
-    // Current founder count
     const row = await db
       .prepare("SELECT COUNT(*) AS total FROM waitlist")
       .first<{ total: number }>();
@@ -134,16 +153,7 @@ export async function POST(request: Request) {
         message: "🔥 You're already part of the Founders Program.",
         founderNumber: null,
         isFounder: foundersClaimed <= FOUNDERS_LIMIT,
-        foundersClaimed,
-        foundersLimit: FOUNDERS_LIMIT,
-        foundersRemaining: Math.max(
-          0,
-          FOUNDERS_LIMIT - foundersClaimed
-        ),
-        progress: Math.min(
-          100,
-          (foundersClaimed / FOUNDERS_LIMIT) * 100
-        ),
+        ...founderStats(foundersClaimed),
       });
     }
 
@@ -151,8 +161,7 @@ export async function POST(request: Request) {
     const isFounder = founderNumber <= FOUNDERS_LIMIT;
 
     await db
-      .prepare(
-        `
+      .prepare(`
         INSERT INTO waitlist
         (
           email,
@@ -162,8 +171,7 @@ export async function POST(request: Request) {
         )
         VALUES
         (?, ?, ?, ?)
-      `
-      )
+      `)
       .bind(
         email,
         "gate",
@@ -175,28 +183,11 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-
-        message: isFounder
-          ? "🔥 Welcome, Founder. Your Founder Badge has been reserved."
+       message: "Welcome, Founder. Your Founder Badge has been reserved."
           : "Welcome to RapYard.",
-
         founderNumber: isFounder ? founderNumber : null,
-
         isFounder,
-
-        foundersClaimed: founderNumber,
-
-        foundersLimit: FOUNDERS_LIMIT,
-
-        foundersRemaining: Math.max(
-          0,
-          FOUNDERS_LIMIT - founderNumber
-        ),
-
-        progress: Math.min(
-          100,
-          (founderNumber / FOUNDERS_LIMIT) * 100
-        ),
+        ...founderStats(founderNumber),
       },
       {
         status: 201,
@@ -204,6 +195,23 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("[waitlist] POST failed", error);
+
+    const message =
+      error instanceof Error ? error.message.toLowerCase() : "";
+
+    if (
+      message.includes("unique") ||
+      message.includes("constraint")
+    ) {
+      return NextResponse.json({
+  success: true,
+  alreadyJoined: true,
+  message: "You're already part of the Founders Program.",
+  founderNumber: null,
+  isFounder: foundersClaimed <= FOUNDERS_LIMIT,
+  ...founderStats(foundersClaimed),
+});
+    }
 
     return NextResponse.json(
       {

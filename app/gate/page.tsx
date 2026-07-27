@@ -1,6 +1,22 @@
-"use client";
-import GateSequence from "./GateSequence";
+import { redirect } from "next/navigation";
 
-export default function GatePage() {
-  return <GateSequence />;
+import Gate from "@/components/gate/Gate";
+import { createClient } from "@/utils/supabase/server";
+
+export default async function GatePage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-black">
+      <Gate user={user} />
+    </main>
+  );
 }

@@ -2,8 +2,6 @@ import Smoke from "@/components/effects/Smoke";
 import Image from "next/image";
 import Link from "next/link";
 
-import WaitlistForm from "./WaitlistForm";
-
 export default function Hero() {
   return (
     <section className="hero-shell relative isolate overflow-hidden px-6 pb-28 pt-[10rem] text-center md:pb-36 md:pt-[12.5rem]">
@@ -35,7 +33,7 @@ export default function Hero() {
         </p>
 
         <p className="mx-auto mt-10 max-w-[64rem] text-[clamp(1.4rem,2.4vw,1.56rem)] leading-[1.25] text-zinc-200">
-          A place built for rappers to:
+          Everything you need to become a better rapper.
         </p>
 
         <ul className="mx-auto mt-12 max-w-2xl space-y-4 text-left text-[clamp(1.35rem,2.2vw,1.5rem)] leading-[1.26] text-zinc-100">
@@ -47,10 +45,13 @@ export default function Hero() {
         </ul>
 
         <p className="mx-auto mt-16 max-w-[64rem] text-[clamp(1.45rem,2.3vw,1.6rem)] leading-[1.25] text-zinc-100">
-          <strong>Everything a rapper needs. Nothing they don&apos;t.</strong>
+          <strong>Everything a rapper needs. Nothing they don't.</strong>
         </p>
 
-        <div className="mx-auto mt-16 h-[4px] w-[min(92vw,42rem)] bg-[linear-gradient(to_right,transparent,#c0c0c0,transparent)]" aria-hidden />
+        <div
+          className="mx-auto mt-16 h-[4px] w-[min(92vw,42rem)] bg-[linear-gradient(to_right,transparent,#c0c0c0,transparent)]"
+          aria-hidden
+        />
 
         <h2 className="mx-auto mt-16 max-w-[64rem] text-[clamp(3rem,6.2vw,4rem)] font-black uppercase leading-[1.05] tracking-[0.08em] text-[#d4af37]">
           Built for Bars, Not Algorithms
@@ -80,32 +81,46 @@ export default function Hero() {
           <p>Leave better than you arrived.</p>
         </div>
 
+        {/* Primary CTA */}
+        <div className="mx-auto mt-20 max-w-xl">
+          <Link
+            href="/gate"
+            className="inline-flex w-full items-center justify-center border-[3px] border-[#d4af37] bg-[#111111] px-10 py-6 text-[clamp(1.4rem,2vw,1.6rem)] font-bold uppercase tracking-[0.08em] text-[#d4af37] transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
+          >
+            Enter The Yard
+          </Link>
+
+          <p className="mt-5 text-lg text-zinc-400">
+            Passwordless • Secure • Free
+          </p>
+        </div>
+
+        {/* Feature Navigation */}
         <div className="relative mx-auto mt-20 max-w-[66rem]">
           <div className="pointer-events-none absolute inset-0 m-auto h-72 w-72 rounded-full bg-[radial-gradient(circle,#c0c0c033_0%,transparent_72%)] blur-2xl" />
+
           <div className="relative grid gap-5 md:grid-cols-3">
             <Link
               href="/booth"
-              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase leading-[1.2] text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
+              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
             >
               Start Recording
             </Link>
+
             <Link
               href="/battles"
-              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase leading-[1.2] text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
+              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
             >
               Enter a Battle
             </Link>
+
             <Link
               href="/feed"
-              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase leading-[1.2] text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
+              className="border-[3px] border-zinc-200 bg-[#111111] px-11 py-6 text-[clamp(1.38rem,2.1vw,1.58rem)] font-bold uppercase text-white transition hover:border-[#c0c0c0] hover:text-[#c0c0c0]"
             >
               Browse Beats
             </Link>
           </div>
-        </div>
-
-        <div className="mt-24 md:mt-28">
-          <WaitlistForm />
         </div>
       </div>
     </section>
