@@ -5,7 +5,7 @@ import Image from "next/image";
 import gsap from "gsap";
 
 import Navbar from "@/components/layout/Navbar";
-import MagicLinkForm from "@/components/gate/MagicLinkForm";
+import MagicLinkForm from "@/components/auth/MagicLinkForm";
 import Smoke from "@/components/landing/cinematic/Smoke";
 import Embers from "@/components/landing/cinematic/Embers";
 

@@ -1,4 +1,4 @@
-import Smoke from "@/components/effects/Smoke";
+﻿import Smoke from "@/components/landing/cinematic/Smoke";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -37,11 +37,11 @@ export default function Hero() {
         </p>
 
         <ul className="mx-auto mt-12 max-w-2xl space-y-4 text-left text-[clamp(1.35rem,2.2vw,1.5rem)] leading-[1.26] text-zinc-100">
-          <li>🎙️ Record instantly</li>
-          <li>⚔️ Jump into battles</li>
-          <li>🎤 Join cyphers</li>
-          <li>💿 Build tapes</li>
-          <li>🎧 Discover beats</li>
+          <li>ðŸŽ™ï¸ Record instantly</li>
+          <li>âš”ï¸ Jump into battles</li>
+          <li>ðŸŽ¤ Join cyphers</li>
+          <li>ðŸ’¿ Build tapes</li>
+          <li>ðŸŽ§ Discover beats</li>
         </ul>
 
         <p className="mx-auto mt-16 max-w-[64rem] text-[clamp(1.45rem,2.3vw,1.6rem)] leading-[1.25] text-zinc-100">
@@ -91,7 +91,7 @@ export default function Hero() {
           </Link>
 
           <p className="mt-5 text-lg text-zinc-400">
-            Passwordless • Secure • Free
+            Passwordless â€¢ Secure â€¢ Free
           </p>
         </div>
 

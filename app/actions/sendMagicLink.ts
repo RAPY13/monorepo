@@ -1,3 +1,7 @@
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+
 export async function sendMagicLink(email: string) {
   console.log(
     "NEXT_PUBLIC_SITE_URL:",

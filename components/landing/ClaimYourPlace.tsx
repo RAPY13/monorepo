@@ -1,5 +1,5 @@
 import Image from "next/image";
-import MagicLinkForm from "@/components/gate/MagicLinkForm";
+import MagicLinkForm from "@/components/auth/MagicLinkForm";
 
 export default function ClaimYourPlace() {
   return (

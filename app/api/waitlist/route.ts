@@ -1,4 +1,4 @@
-#import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
 
 const FOUNDERS_LIMIT = 500;
@@ -13,10 +13,17 @@ type DbLike = {
   prepare: (query: string) => DbStatement;
 };
 
-async function getDb() {
+type CloudflareEnv = {
+  DB?: DbLike;
+};
+
+async function getDb(): Promise<DbLike | null> {
   try {
-    const { env } = await getCloudflareContext({ async: true });
-    return (env as CloudflareEnv & { DB?: DbLike }).DB ?? null;
+    const { env } = await getCloudflareContext({
+      async: true,
+    });
+
+    return (env as CloudflareEnv).DB ?? null;
   } catch (error) {
     console.error("[waitlist] Cloudflare context unavailable", error);
     return null;
@@ -38,7 +45,7 @@ function founderStats(count: number) {
 
 /**
  * GET /api/waitlist
- * Returns current Founder Program statistics.
+ * Returns Founder Program statistics.
  */
 export async function GET() {
   const db = await getDb();
@@ -56,7 +63,8 @@ export async function GET() {
 
     return NextResponse.json(founderStats(foundersClaimed), {
       headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        "Cache-Control":
+          "public, s-maxage=60, stale-while-revalidate=300",
       },
     });
   } catch (error) {
@@ -126,7 +134,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Founder reservations are temporarily unavailable in this local mode.",
+          "Founder reservations are temporarily unavailable in this environment.",
       },
       {
         status: 503,
@@ -138,13 +146,13 @@ export async function POST(request: Request) {
     const existing = await db
       .prepare("SELECT id FROM waitlist WHERE email = ?")
       .bind(email)
-      .first();
+      .first<{ id: number }>();
 
-    const row = await db
+    const countRow = await db
       .prepare("SELECT COUNT(*) AS total FROM waitlist")
       .first<{ total: number }>();
 
-    const foundersClaimed = Number(row?.total ?? 0);
+    const foundersClaimed = Number(countRow?.total ?? 0);
 
     if (existing) {
       return NextResponse.json({
@@ -183,8 +191,10 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-       message: "Welcome, Founder. Your Founder Badge has been reserved."
-          : "Welcome to RapYard.",
+        alreadyJoined: false,
+        message: isFounder
+          ? "🔥 Welcome, Founder. Your Founder Badge has been reserved."
+          : "Welcome to RapYard. You've been added to the waitlist.",
         founderNumber: isFounder ? founderNumber : null,
         isFounder,
         ...founderStats(founderNumber),
@@ -197,20 +207,28 @@ export async function POST(request: Request) {
     console.error("[waitlist] POST failed", error);
 
     const message =
-      error instanceof Error ? error.message.toLowerCase() : "";
+      error instanceof Error
+        ? error.message.toLowerCase()
+        : "";
 
     if (
       message.includes("unique") ||
       message.includes("constraint")
     ) {
+      const countRow = await db
+        .prepare("SELECT COUNT(*) AS total FROM waitlist")
+        .first<{ total: number }>();
+
+      const foundersClaimed = Number(countRow?.total ?? 0);
+
       return NextResponse.json({
-  success: true,
-  alreadyJoined: true,
-  message: "You're already part of the Founders Program.",
-  founderNumber: null,
-  isFounder: foundersClaimed <= FOUNDERS_LIMIT,
-  ...founderStats(foundersClaimed),
-});
+        success: true,
+        alreadyJoined: true,
+        message: "🔥 You're already part of the Founders Program.",
+        founderNumber: null,
+        isFounder: foundersClaimed <= FOUNDERS_LIMIT,
+        ...founderStats(foundersClaimed),
+      });
     }
 
     return NextResponse.json(

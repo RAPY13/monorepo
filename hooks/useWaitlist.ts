@@ -1,40 +1,66 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+
+type WaitlistResponse = {
+  error?: string;
+  message?: string;
+};
 
 export default function useWaitlist(initialEmail = "") {
   const router = useRouter();
+
   const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function enterYard(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     setLoading(true);
     setError("");
 
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email }),
       });
 
       if (res.ok) {
-        document.cookie = "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
+        document.cookie =
+          "rapyard-auth=1; path=/; max-age=31536000; samesite=lax";
+
         router.push("/gate");
         return;
       }
 
-      const data = await res.json().catch(() => null);
-      setError(data?.error || data?.message || "Unable to enter the yard. Try again.");
+      const data = (await res.json().catch(() => null)) as
+        | WaitlistResponse
+        | null;
+
+      setError(
+        data?.error ||
+          data?.message ||
+          "Unable to enter the yard. Try again.",
+      );
     } catch {
-      setError("Network issue while entering the yard. Please try again.");
+      setError(
+        "Network issue while entering the yard. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  return { email, setEmail, loading, error, enterYard };
+  return {
+    email,
+    setEmail,
+    loading,
+    error,
+    enterYard,
+  };
 }

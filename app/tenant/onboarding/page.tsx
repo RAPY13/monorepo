@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getOnboardingProfile, updateOnboardingProfile, type YardRole } from "@/lib/onboarding-profile";
 
 const REGION_OPTIONS = ["us-east", "us-west", "eu-central", "ap-south"];

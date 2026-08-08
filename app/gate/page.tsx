@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import Gate from "@/components/gate/Gate";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function GatePage() {
   const supabase = await createClient();

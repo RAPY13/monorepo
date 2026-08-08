@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getOnboardingProfile, updateOnboardingProfile, type YardRole } from "@/lib/onboarding-profile";
 
 const lanes: Array<{ role: YardRole; title: string; subtitle: string }> = [

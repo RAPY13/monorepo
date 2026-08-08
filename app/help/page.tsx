@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/app/components/AuthGuard";
 import BottomNav from "@/app/components/BottomNav";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getOnboardingProfile, type YardRole } from "@/lib/onboarding-profile";
 import {
   BASE_HELP_ARTICLES,

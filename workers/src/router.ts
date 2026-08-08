@@ -1,18 +1,36 @@
 import { createClient } from "@supabase/supabase-js";
 
+interface WorkerEnv {
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
+  PAGES: Fetcher;
+}
+
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(
+    request: Request,
+    env: WorkerEnv,
+    _ctx: ExecutionContext,
+  ): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
 
     const supabase = createClient(
       env.SUPABASE_URL,
       env.SUPABASE_ANON_KEY,
-      { global: { fetch }, auth: { persistSession: false } }
+      {
+        global: {
+          fetch,
+        },
+        auth: {
+          persistSession: false,
+        },
+      },
     );
 
-    // Check session cookie
-    const accessToken = request.headers.get("Authorization")?.replace("Bearer ", "");
+    const accessToken = request.headers
+      .get("Authorization")
+      ?.replace(/^Bearer\s+/i, "");
 
     const isAuthed = accessToken
       ? (await supabase.auth.getUser(accessToken)).data.user
@@ -24,14 +42,21 @@ export default {
     }
 
     // Protected routes
-    if (path.startsWith("/yard") || path.startsWith("/profile")) {
+    if (
+      path.startsWith("/yard") ||
+      path.startsWith("/profile")
+    ) {
       if (!isAuthed) {
-        return Response.redirect(url.origin + "/gate", 302);
+        return Response.redirect(
+          new URL("/gate", url.origin),
+          302,
+        );
       }
+
       return env.PAGES.fetch(request);
     }
 
     // Default: proxy to Pages
     return env.PAGES.fetch(request);
-  }
+  },
 };
