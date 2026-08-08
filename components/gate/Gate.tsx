@@ -18,7 +18,7 @@ type GateProps = {
 
 export default function Gate({ user }: GateProps) {
   const router = useRouter();
-  const gateRef = useRef<HTMLElement>(null);
+  const gateRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!gateRef.current) return;
@@ -40,7 +40,7 @@ export default function Gate({ user }: GateProps) {
             opacity: 0,
             duration: 0.5,
           },
-          "-=0.3"
+          "-=0.3",
         )
         .from(
           "[data-gate='title']",
@@ -49,7 +49,7 @@ export default function Gate({ user }: GateProps) {
             y: 24,
             duration: 0.5,
           },
-          "-=0.2"
+          "-=0.2",
         )
         .from(
           "[data-gate='button']",
@@ -58,7 +58,7 @@ export default function Gate({ user }: GateProps) {
             y: 18,
             duration: 0.45,
           },
-          "-=0.2"
+          "-=0.2",
         );
     }, gateRef);
 
@@ -66,13 +66,28 @@ export default function Gate({ user }: GateProps) {
   }, []);
 
   function handleEnter() {
-    gsap.timeline({
-      onComplete: () => router.push("/rap-sheet"),
-    })
-      .to("[data-gate='doors']", {
-        scaleX: 0.98,
-        duration: 0.15,
+    if (!gateRef.current) return;
+
+    gsap
+      .timeline({
+        onComplete: () => {
+          router.push("/rap-sheet");
+        },
       })
+      .to("[data-gate='button']", {
+        scale: 0.96,
+        opacity: 0.85,
+        duration: 0.15,
+        ease: "power2.out",
+      })
+      .to(
+        "[data-gate='doors']",
+        {
+          scaleX: 0.98,
+          duration: 0.15,
+        },
+        0,
+      )
       .to(
         "[data-gate='doors-left']",
         {
@@ -80,7 +95,7 @@ export default function Gate({ user }: GateProps) {
           duration: 1.3,
           ease: "power4.inOut",
         },
-        0
+        0.05,
       )
       .to(
         "[data-gate='doors-right']",
@@ -89,7 +104,7 @@ export default function Gate({ user }: GateProps) {
           duration: 1.3,
           ease: "power4.inOut",
         },
-        0
+        0.05,
       )
       .to(
         gateRef.current,
@@ -98,30 +113,34 @@ export default function Gate({ user }: GateProps) {
           duration: 1.3,
           ease: "power2.inOut",
         },
-        0
+        0,
       );
   }
 
   return (
-    <section
+    <main
       ref={gateRef}
-      className="relative min-h-screen overflow-hidden bg-black text-white"
+      className="group relative min-h-screen overflow-hidden bg-black"
     >
+      {/* Gate image */}
       <GateBackground />
 
+      {/* Atmospheric effects */}
       <GateAtmosphere />
 
+      {/* Opening doors */}
       <GateDoors />
 
+      {/* Gate content */}
       <div className="relative z-20 flex min-h-screen items-center justify-center px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="flex flex-col items-center text-center">
           <GateTitle user={user} />
 
-          <div className="mt-12">
-            <GateEnterButton onEnter={handleEnter} />
+          <div className="mt-10">
+            <GateEnterButton onClick={handleEnter} />
           </div>
         </div>
       </div>
-    </section>
+    </main>
   );
 }

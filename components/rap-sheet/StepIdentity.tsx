@@ -2,15 +2,23 @@
 
 import type { ChangeEvent } from "react";
 import type { RapSheetData } from "./types";
+import AvatarSelector, {
+  type AvatarChoice,
+} from "./AvatarSelector";
 
 type StepIdentityProps = {
   data: RapSheetData;
 
-  update: <K extends keyof RapSheetData>(
-    key: K,
-    value: RapSheetData[K]
+  update: (
+    key: keyof RapSheetData,
+    value: RapSheetData[keyof RapSheetData]
   ) => void;
 };
+
+const DEFAULT_AVATARS = {
+  male: "/images/avatars/male-default.jpeg",
+  female: "/images/avatars/female-default.jpeg",
+} as const;
 
 export default function StepIdentity({
   data,
@@ -23,18 +31,62 @@ export default function StepIdentity({
 
     if (!file) return;
 
-    // Temporary until avatar uploads are wired to Supabase.
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please choose an image smaller than 5MB.");
+      return;
+    }
+
     const previewUrl = URL.createObjectURL(file);
 
     update("avatarUrl", previewUrl);
   }
 
+  function handleAvatarChange(
+    choice: AvatarChoice,
+    image?: string
+  ) {
+    if (choice === "male") {
+      update("avatarUrl", DEFAULT_AVATARS.male);
+      return;
+    }
+
+    if (choice === "female") {
+      update("avatarUrl", DEFAULT_AVATARS.female);
+      return;
+    }
+
+    if (choice === "custom" && image) {
+      update("avatarUrl", image);
+    }
+  }
+
+  function getAvatarChoice(): AvatarChoice | undefined {
+    if (!data.avatarUrl) {
+      return undefined;
+    }
+
+    if (data.avatarUrl === DEFAULT_AVATARS.male) {
+      return "male";
+    }
+
+    if (data.avatarUrl === DEFAULT_AVATARS.female) {
+      return "female";
+    }
+
+    return "custom";
+  }
+
   return (
-    <section className="mx-auto max-w-3xl">
-      <div className="mb-12">
-        <p className="text-xs font-bold uppercase tracking-[0.35em] text-orange-500">
+    <section className="space-y-10">
+      {/* Header */}
+      <div>
+        <div className="text-sm font-bold uppercase tracking-[0.3em] text-orange-500">
           Step 1
-        </p>
+        </div>
 
         <h1 className="mt-3 text-5xl font-black">
           Who Are You?
@@ -49,11 +101,15 @@ export default function StepIdentity({
       <div className="space-y-8">
         {/* Rap Name */}
         <div>
-          <label className="mb-3 block text-sm font-bold uppercase tracking-[0.25em] text-zinc-400">
+          <label
+            htmlFor="rapName"
+            className="mb-3 block text-sm font-bold uppercase tracking-[0.25em] text-zinc-400"
+          >
             Rap Name
           </label>
 
           <input
+            id="rapName"
             value={data.rapName}
             onChange={(e) =>
               update("rapName", e.target.value)
@@ -65,11 +121,15 @@ export default function StepIdentity({
 
         {/* Username */}
         <div>
-          <label className="mb-3 block text-sm font-bold uppercase tracking-[0.25em] text-zinc-400">
+          <label
+            htmlFor="username"
+            className="mb-3 block text-sm font-bold uppercase tracking-[0.25em] text-zinc-400"
+          >
             Username
           </label>
 
           <input
+            id="username"
             value={data.username}
             onChange={(e) =>
               update("username", e.target.value)
@@ -80,16 +140,24 @@ export default function StepIdentity({
         </div>
 
         {/* Avatar */}
-        <div>
-          <label className="mb-3 block text-sm font-bold uppercase tracking-[0.25em] text-zinc-400">
-            Avatar
-          </label>
+        <AvatarSelector
+          value={getAvatarChoice()}
+          customPreview={
+            data.avatarUrl &&
+            data.avatarUrl !== DEFAULT_AVATARS.male &&
+            data.avatarUrl !== DEFAULT_AVATARS.female
+              ? data.avatarUrl
+              : undefined
+          }
+          onChange={handleAvatarChange}
+        />
 
+        {/* Existing upload compatibility */}
+        <div className="hidden">
           <input
             type="file"
             accept="image/*"
             onChange={uploadAvatarFile}
-            className="block w-full rounded-xl border border-dashed border-zinc-700 bg-zinc-950 p-5 text-sm file:mr-5 file:rounded-lg file:border-0 file:bg-orange-500 file:px-5 file:py-3 file:font-semibold file:text-black"
           />
         </div>
       </div>

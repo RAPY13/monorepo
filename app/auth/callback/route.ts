@@ -4,14 +4,31 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const { searchParams, origin } = url;
+  const code = url.searchParams.get("code");
+  const nextParam = url.searchParams.get("next");
 
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/gate";
+  // Only allow internal application redirects.
+  const next =
+    nextParam &&
+    nextParam.startsWith("/") &&
+    !nextParam.startsWith("//")
+      ? nextParam
+      : "/gate";
 
+  const origin = url.origin;
+
+  // No authorization code means Supabase did not return
+  // a usable PKCE callback.
   if (!code) {
+    console.error("[Auth Callback] Missing authorization code", {
+      url: request.url,
+    });
+
     return NextResponse.redirect(
-      new URL("/gate?error=missing_code", origin)
+      new URL(
+        "/gate?error=missing_code",
+        origin,
+      ),
     );
   }
 
@@ -25,6 +42,7 @@ export async function GET(request: Request) {
         get(name) {
           return cookieStore.get(name)?.value;
         },
+
         set(name, value, options) {
           cookieStore.set({
             name,
@@ -32,6 +50,7 @@ export async function GET(request: Request) {
             ...options,
           });
         },
+
         remove(name, options) {
           cookieStore.set({
             name,
@@ -40,26 +59,38 @@ export async function GET(request: Request) {
           });
         },
       },
-    }
+    },
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    console.error("Supabase auth error:", error.message);
-
-    return NextResponse.redirect(
-      new URL("/gate?error=auth", origin)
+    console.error(
+      "[Auth Callback] exchangeCodeForSession failed:",
+      error.message,
     );
+
+    const errorUrl = new URL("/gate", origin);
+
+    errorUrl.searchParams.set(
+      "error",
+      "auth",
+    );
+
+    errorUrl.searchParams.set(
+      "message",
+      error.message,
+    );
+
+    return NextResponse.redirect(errorUrl);
   }
 
-  // Allow only internal redirects.
-  const destination =
-    next.startsWith("/") && !next.startsWith("//")
-      ? next
-      : "/gate";
+  console.log(
+    "[Auth Callback] Session established successfully",
+  );
 
   return NextResponse.redirect(
-    new URL(destination, origin)
+    new URL(next, origin),
   );
 }

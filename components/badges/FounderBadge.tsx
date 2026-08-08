@@ -1,19 +1,22 @@
-// components/badges/FounderBadge.tsx
-
 import Image from "next/image";
 
-export default function FounderBadge({
-  size = 220,
-}: {
+type FounderBadgeProps = {
   size?: number;
-}) {
+  className?: string;
+};
+
+export default function FounderBadge({
+  size = 180,
+  className = "",
+}: FounderBadgeProps) {
   return (
     <Image
-      src="/badges/founder-badge.png"
-      alt="Founder Badge"
+      src="/images/founder-badge.webp"
+      alt="RapYard Founders Badge"
       width={size}
       height={size}
       priority
+      className={`object-contain ${className}`}
     />
   );
 }

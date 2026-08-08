@@ -4,36 +4,44 @@ import Image from "next/image";
 
 export default function GateBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Fence / Industrial Background */}
+    <div
+      data-gate="background"
+      className="
+        pointer-events-none
+        absolute
+        inset-0
+        z-0
+        flex
+        items-center
+        justify-center
+        overflow-hidden
+        bg-black
+      "
+    >
       <Image
-        src="/gate-bg.webp"
+        src="/images/gate/gate.webp"
         alt="RapYard Gate"
         fill
         priority
-        className="object-cover opacity-45"
-      />
-
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
-
-      {/* Orange Fire Glow */}
-      <div
+        sizes="100vw"
         className="
-          absolute
-          bottom-0
-          inset-x-0
-          h-96
-          bg-gradient-to-t
-          from-orange-600/30
-          via-orange-500/10
-          to-transparent
-          blur-3xl
+          object-contain
+          object-center
+          opacity-90
         "
       />
 
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_35%,rgba(0,0,0,.85)_100%)]" />
+      {/* Cinematic dark overlay */}
+      <div className="absolute inset-0 bg-black/35" />
+
+      {/* Edge vignette */}
+      <div
+        className="
+          absolute
+          inset-0
+          bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,.75)_100%)]
+        "
+      />
     </div>
   );
 }
