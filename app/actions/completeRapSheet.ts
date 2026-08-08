@@ -59,7 +59,9 @@ export async function completeRapSheet(
   }
 
   if (bio.length > 300) {
-    throw new Error("Your bio must be 300 characters or less.");
+    throw new Error(
+      "Your bio must be 300 characters or less.",
+    );
   }
 
   const genres = Array.isArray(input.genres)
@@ -70,54 +72,18 @@ export async function completeRapSheet(
       )
     : [];
 
-  /*
-   * Browser blob URLs cannot be stored as permanent avatar URLs.
-   * Keep only real/persistent URLs.
-   */
+  // ------------------------------------------------------------
+  // Avatar
+  //
+  // Browser blob URLs are temporary and cannot be stored
+  // as permanent avatar URLs.
+  // ------------------------------------------------------------
+
   const avatarUrl =
     input.avatarUrl &&
     !input.avatarUrl.startsWith("blob:")
       ? input.avatarUrl
       : null;
-
-  // ------------------------------------------------------------
-  // Make sure the profile exists
-  // ------------------------------------------------------------
-
-  const { data: existingById, error: lookupByIdError } =
-    await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-  if (lookupByIdError) {
-    console.error(
-      "[RapSheet] Profile lookup failed:",
-      lookupByIdError,
-    );
-  }
-
-  let profileExists = Boolean(existingById);
-
-  // Some versions of the schema use user_id instead of id.
-  if (!profileExists) {
-    const { data: existingByUserId, error: lookupByUserIdError } =
-      await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-    if (lookupByUserIdError) {
-      console.error(
-        "[RapSheet] user_id profile lookup failed:",
-        lookupByUserIdError,
-      );
-    }
-
-    profileExists = Boolean(existingByUserId);
-  }
 
   // ------------------------------------------------------------
   // Profile patch
@@ -136,7 +102,50 @@ export async function completeRapSheet(
   };
 
   // ------------------------------------------------------------
-  // Update existing profile
+  // Find existing profile
+  // ------------------------------------------------------------
+
+  const {
+    data: existingById,
+    error: lookupByIdError,
+  } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (lookupByIdError) {
+    console.error(
+      "[RapSheet] Profile lookup by id failed:",
+      lookupByIdError,
+    );
+  }
+
+  let profileExists = Boolean(existingById);
+
+  // Some schema versions use user_id instead of id.
+  if (!profileExists) {
+    const {
+      data: existingByUserId,
+      error: lookupByUserIdError,
+    } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (lookupByUserIdError) {
+      console.error(
+        "[RapSheet] Profile lookup by user_id failed:",
+        lookupByUserIdError,
+      );
+    }
+
+    profileExists = Boolean(existingByUserId);
+  }
+
+  // ------------------------------------------------------------
+  // Save profiles
   // ------------------------------------------------------------
 
   if (profileExists) {
@@ -146,6 +155,13 @@ export async function completeRapSheet(
       .eq("id", user.id);
 
     if (!byId.error) {
+      await syncCreatorProfile({
+        userId: user.id,
+        rapName,
+        avatarUrl,
+        bio,
+      });
+
       return {
         success: true,
       };
@@ -162,6 +178,13 @@ export async function completeRapSheet(
       .eq("user_id", user.id);
 
     if (!byUserId.error) {
+      await syncCreatorProfile({
+        userId: user.id,
+        rapName,
+        avatarUrl,
+        bio,
+      });
+
       return {
         success: true,
       };
@@ -190,6 +213,13 @@ export async function completeRapSheet(
     });
 
   if (!insertById.error) {
+    await syncCreatorProfile({
+      userId: user.id,
+      rapName,
+      avatarUrl,
+      bio,
+    });
+
     return {
       success: true,
     };
@@ -208,6 +238,13 @@ export async function completeRapSheet(
     });
 
   if (!insertByUserId.error) {
+    await syncCreatorProfile({
+      userId: user.id,
+      rapName,
+      avatarUrl,
+      bio,
+    });
+
     return {
       success: true,
     };
@@ -222,4 +259,103 @@ export async function completeRapSheet(
     insertByUserId.error.message ||
       "Unable to create your Rap Sheet.",
   );
+}
+
+// ============================================================
+// Sync creator_profiles
+// ============================================================
+
+async function syncCreatorProfile({
+  userId,
+  rapName,
+  avatarUrl,
+  bio,
+}: {
+  userId: string;
+  rapName: string;
+  avatarUrl: string | null;
+  bio: string;
+}) {
+  const supabase = await createClient();
+
+  const {
+    data: existingCreatorProfile,
+    error: lookupError,
+  } = await supabase
+    .from("creator_profiles")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error(
+      "[RapSheet] Creator profile lookup failed:",
+      lookupError,
+    );
+
+    throw new Error(
+      lookupError.message ||
+        "Unable to load creator profile.",
+    );
+  }
+
+  // ------------------------------------------------------------
+  // Existing creator profile
+  // ------------------------------------------------------------
+
+  if (existingCreatorProfile) {
+    const { error } = await supabase
+      .from("creator_profiles")
+      .update({
+        stage_name: rapName,
+        avatar_url: avatarUrl,
+        bio: bio || null,
+      })
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error(
+        "[RapSheet] Creator profile sync failed:",
+        error,
+      );
+
+      throw new Error(
+        error.message ||
+          "Unable to update creator profile.",
+      );
+    }
+
+    return;
+  }
+
+  // ------------------------------------------------------------
+  // Create creator profile
+  // ------------------------------------------------------------
+
+  const { error } = await supabase
+    .from("creator_profiles")
+    .insert({
+      user_id: userId,
+      stage_name: rapName,
+      avatar_url: avatarUrl,
+      bio: bio || null,
+      stats: {
+        battles: 0,
+        wins: 0,
+        losses: 0,
+        tapes: 0,
+      },
+    });
+
+  if (error) {
+    console.error(
+      "[RapSheet] Creator profile creation failed:",
+      error,
+    );
+
+    throw new Error(
+      error.message ||
+        "Unable to create creator profile.",
+    );
+  }
 }

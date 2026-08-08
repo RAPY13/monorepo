@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "RapYard",
-  description: "Creators build the yard.",
+  description:
+    "Your room. Your take. Your sound.",
+};
+
+type Props = {
+  children: ReactNode;
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Props) {
   return (
     <html lang="en">
       <body>{children}</body>
