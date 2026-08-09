@@ -6,40 +6,41 @@ export default function GateBackground() {
   return (
     <div
       data-gate="background"
-      className="
-        pointer-events-none
-        absolute
-        inset-0
-        z-0
-        flex
-        items-center
-        justify-center
-        overflow-hidden
-        bg-black
-      "
+      className="absolute inset-0 z-0 overflow-hidden bg-black"
     >
+      {/* Yard — hidden behind the closed gate */}
       <Image
-        src="/images/gate/gate.webp"
-        alt="RapYard Gate"
+        src="/images/gate/yard-background.png"
+        alt=""
         fill
         priority
         sizes="100vw"
-        className="
-          object-contain
-          object-center
-          opacity-90
-        "
+        className="object-cover object-center"
       />
 
-      {/* Cinematic dark overlay */}
-      <div className="absolute inset-0 bg-black/35" />
+      {/* Closed RapYard gate */}
+      <div
+        data-gate="closed-gate"
+        className="absolute inset-0 z-10"
+      >
+        <Image
+          src="/images/gate/gate.webp"
+          alt="RapYard Gate"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
-      {/* Edge vignette */}
+      {/* Cinematic dark grade */}
+      <div className="absolute inset-0 z-20 bg-black/20" />
+
+      {/* Vignette */}
       <div
         className="
-          absolute
-          inset-0
-          bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,.75)_100%)]
+          absolute inset-0 z-30
+          bg-[radial-gradient(circle_at_center,transparent_25%,rgba(0,0,0,.8)_100%)]
         "
       />
     </div>

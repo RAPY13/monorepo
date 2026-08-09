@@ -3,7 +3,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { getSessionTakes } from "@/lib/takes/getSessionTakes";
 import { uploadRecording } from "@/lib/audio/uploadRecording";
+import StudioSpeakerWall from "./StudioSpeakerWall";
 import type { RecordingTake } from "@/lib/audio/types";
+import StudioRoom from "./StudioRoom";
 import {
   Pause,
   Play,
@@ -52,6 +54,9 @@ export default function RecordingBooth({
     useState("");
 
   const [inputLevel, setInputLevel] =
+    useState(0);
+ 
+  const [speakerLevel, setSpeakerLevel] =
     useState(0);
 
   const recorderRef =
@@ -511,50 +516,99 @@ export default function RecordingBooth({
    * Live microphone level.
    */
   function startMeter() {
-    const analyser =
-      analyserRef.current;
+  const analyser = analyserRef.current;
 
-    if (!analyser) {
-      return;
+  if (!analyser) {
+    return;
+  }
+
+  const timeData = new Uint8Array(
+    analyser.fftSize,
+  );
+
+  const frequencyData = new Uint8Array(
+    analyser.frequencyBinCount,
+  );
+
+  const update = () => {
+    // -----------------------------------------
+    // Overall microphone level
+    // -----------------------------------------
+
+    analyser.getByteTimeDomainData(timeData);
+
+    let sum = 0;
+
+    for (const value of timeData) {
+      const normalized =
+        (value - 128) / 128;
+
+      sum += normalized * normalized;
     }
 
-    const data =
-      new Uint8Array(
-        analyser.frequencyBinCount,
-      );
+    const rms = Math.sqrt(
+      sum / timeData.length,
+    );
 
-    const update = () => {
-      analyser.getByteTimeDomainData(
-        data,
-      );
+    const normalizedLevel = Math.min(
+      1,
+      rms * 4,
+    );
 
-      let sum = 0;
+    setInputLevel(normalizedLevel);
 
-      for (const value of data) {
-        const normalized =
-          (value - 128) / 128;
+    // -----------------------------------------
+    // Bass response for the 18" speakers
+    // -----------------------------------------
 
-        sum +=
-          normalized *
-          normalized;
-      }
+    analyser.getByteFrequencyData(
+      frequencyData,
+    );
 
-      const rms = Math.sqrt(
-        sum / data.length,
-      );
+    const bassBins = Math.min(
+      10,
+      frequencyData.length,
+    );
 
-      setInputLevel(
-        Math.min(1, rms * 4),
-      );
+    let bassSum = 0;
 
-      animationRef.current =
-        requestAnimationFrame(
-          update,
-        );
-    };
+    for (
+      let index = 1;
+      index < bassBins;
+      index++
+    ) {
+      bassSum += frequencyData[index];
+    }
 
-    update();
-  }
+    const bassAverage =
+      bassSum /
+      Math.max(1, bassBins - 1);
+
+    const bassLevel = Math.min(
+      1,
+      bassAverage / 110,
+    );
+
+    // -----------------------------------------
+    // Combine vocal energy + bass energy
+    // -----------------------------------------
+
+    const speakerResponse = Math.min(
+      1,
+      normalizedLevel * 0.7 +
+        bassLevel * 0.8,
+    );
+
+    setSpeakerLevel(
+      speakerResponse,
+    );
+
+    animationRef.current =
+      requestAnimationFrame(update);
+  };
+
+  update();
+}
 
   function stopMeter() {
     if (animationRef.current) {
@@ -675,6 +729,12 @@ export default function RecordingBooth({
 
           {/* Recording environment */}
           <div className="relative min-h-[650px] overflow-hidden">
+  <StudioRoom
+    level={speakerLevel}
+    active={isActive}
+  />
+
+  {/* Existing Booth interface */}
             <div className="absolute inset-0 opacity-20">
               <div
                 className="h-full w-full"

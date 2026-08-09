@@ -1,13 +1,10 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 
 import GateBackground from "@/components/gate/GateBackground";
-import GateAtmosphere from "@/components/gate/GateAtmosphere";
-import GateDoors from "@/components/gate/GateDoors";
-import GateTitle from "@/components/gate/GateTitle";
 import GateEnterButton from "@/components/gate/GateEnterButton";
 
 type GateProps = {
@@ -18,126 +15,170 @@ type GateProps = {
 
 export default function Gate({ user }: GateProps) {
   const router = useRouter();
-  const gateRef = useRef<HTMLDivElement>(null);
+
+  const gateRef = useRef<HTMLElement | null>(null);
+  const [entering, setEntering] = useState(false);
 
   useLayoutEffect(() => {
     if (!gateRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap
-        .timeline({
-          defaults: {
-            ease: "power3.out",
-          },
-        })
-        .from("[data-gate='background']", {
-          opacity: 0,
-          duration: 0.6,
-        })
-        .from(
-          "[data-gate='atmosphere']",
-          {
-            opacity: 0,
-            duration: 0.5,
-          },
-          "-=0.3",
-        )
-        .from(
-          "[data-gate='title']",
-          {
-            opacity: 0,
-            y: 24,
-            duration: 0.5,
-          },
-          "-=0.2",
-        )
-        .from(
-          "[data-gate='button']",
-          {
-            opacity: 0,
-            y: 18,
-            duration: 0.45,
-          },
-          "-=0.2",
-        );
+      gsap.set("[data-gate='closed-gate']", {
+        opacity: 1,
+        scale: 1,
+      });
+
+      gsap.set("[data-gate='background']", {
+        scale: 1,
+      });
+
+      gsap.set("[data-gate='title']", {
+        opacity: 1,
+        y: 0,
+      });
+
+      gsap.set("[data-gate='button']", {
+        opacity: 1,
+        y: 0,
+      });
     }, gateRef);
 
     return () => ctx.revert();
   }, []);
 
   function handleEnter() {
-    if (!gateRef.current) return;
+    if (entering || !gateRef.current) return;
 
-    gsap
-      .timeline({
+    setEntering(true);
+
+    const ctx = gsap.context(() => {
+      const timeline = gsap.timeline({
+        defaults: {
+          ease: "power4.inOut",
+        },
         onComplete: () => {
           router.push("/rap-sheet");
         },
-      })
-      .to("[data-gate='button']", {
-        scale: 0.96,
-        opacity: 0.85,
-        duration: 0.15,
-        ease: "power2.out",
-      })
-      .to(
-        "[data-gate='doors']",
-        {
-          scaleX: 0.98,
-          duration: 0.15,
-        },
-        0,
-      )
-      .to(
-        "[data-gate='doors-left']",
-        {
-          xPercent: -100,
-          duration: 1.3,
-          ease: "power4.inOut",
-        },
-        0.05,
-      )
-      .to(
-        "[data-gate='doors-right']",
-        {
-          xPercent: 100,
-          duration: 1.3,
-          ease: "power4.inOut",
-        },
-        0.05,
-      )
-      .to(
-        gateRef.current,
-        {
-          scale: 1.05,
-          duration: 1.3,
-          ease: "power2.inOut",
-        },
-        0,
-      );
+      });
+
+      timeline
+        // Button press
+        .to("[data-gate='button']", {
+          scale: 0.94,
+          duration: 0.12,
+          ease: "power2.out",
+        })
+
+        // Begin moving toward the Yard
+        .to(
+          "[data-gate='background']",
+          {
+            scale: 1.08,
+            duration: 2,
+          },
+          0.1,
+        )
+
+        // Pull the closed gate away
+        .to(
+          "[data-gate='closed-gate']",
+          {
+            scale: 1.12,
+            opacity: 0,
+            duration: 1.7,
+            ease: "power4.inOut",
+          },
+          0.15,
+        )
+
+        // Remove title
+        .to(
+          "[data-gate='title']",
+          {
+            opacity: 0,
+            y: -35,
+            duration: 0.7,
+            ease: "power3.in",
+          },
+          0.2,
+        )
+
+        // Remove button
+        .to(
+          "[data-gate='button']",
+          {
+            opacity: 0,
+            y: 30,
+            duration: 0.5,
+          },
+          0.2,
+        );
+    }, gateRef);
+
+    return () => ctx.revert();
   }
 
   return (
     <main
       ref={gateRef}
-      className="group relative min-h-screen overflow-hidden bg-black"
+      className="relative min-h-screen overflow-hidden bg-black"
     >
-      {/* Gate image */}
+      {/* Yard + closed RapYard gate */}
       <GateBackground />
 
-      {/* Atmospheric effects */}
-      <GateAtmosphere />
-
-      {/* Opening doors */}
-      <GateDoors />
+      {/* Cinematic vignette */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          z-40
+          bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,.65)_100%)]
+        "
+      />
 
       {/* Gate content */}
-      <div className="relative z-20 flex min-h-screen items-center justify-center px-6">
+      <div className="relative z-50 flex min-h-screen items-center justify-center px-6">
         <div className="flex flex-col items-center text-center">
-          <GateTitle user={user} />
+          <div data-gate="title">
+            <p className="text-xs font-black uppercase tracking-[0.55em] text-orange-400">
+              The Yardgate Awakens
+            </p>
 
-          <div className="mt-10">
-            <GateEnterButton onClick={handleEnter} />
+            <h1
+              className="
+                mt-5
+                text-5xl
+                font-black
+                uppercase
+                tracking-[0.08em]
+                text-white
+                drop-shadow-[0_4px_20px_rgba(0,0,0,.9)]
+                md:text-7xl
+              "
+            >
+              Enter The Yard
+            </h1>
+
+            <p className="mt-5 max-w-xl text-sm text-zinc-300/80 md:text-base">
+              The gate is waiting.
+            </p>
+
+            {user.email && (
+              <p className="mt-2 text-xs uppercase tracking-[0.25em] text-zinc-500">
+                Gate pass verified
+              </p>
+            )}
+          </div>
+
+          <div
+            data-gate="button"
+            className="mt-10"
+          >
+            <GateEnterButton
+              onClick={handleEnter}
+              disabled={entering}
+            />
           </div>
         </div>
       </div>
