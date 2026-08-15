@@ -20,7 +20,7 @@ function isProtectedPath(pathname: string) {
   );
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { response, user } =
     await updateSession(request);
 
