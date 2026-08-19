@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/");
+    redirect("/auth");
   }
 
   const profile =

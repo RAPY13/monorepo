@@ -12,7 +12,7 @@ export default async function RapSheetPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/");
+    redirect("/auth");
   }
 
   const { data: profile, error } = await supabase
@@ -51,3 +51,4 @@ export default async function RapSheetPage() {
     />
   );
 }
+

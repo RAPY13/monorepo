@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import RapSheet from "@/components/rap-sheet/RapSheet";
 import { createClient } from "@/lib/supabase/server";
@@ -11,8 +11,9 @@ export default async function RapSheetEditPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/");
+    redirect("/auth");
   }
 
   return <RapSheet user={user} />;
 }
+

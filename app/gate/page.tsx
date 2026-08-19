@@ -11,7 +11,7 @@ export default async function GatePage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/");
+    redirect("/auth");
   }
 
   return (
@@ -20,3 +20,4 @@ export default async function GatePage() {
     </main>
   );
 }
+

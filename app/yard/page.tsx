@@ -13,7 +13,7 @@ export default async function YardPage() {
 
   // User is not authenticated.
   if (!user) {
-    redirect("/");
+    redirect("/auth");
   }
 
   // Check the user's Rap Sheet / onboarding state.
