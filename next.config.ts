@@ -4,11 +4,17 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*"],
+    },
+  },
+
   images: {
     qualities: [75, 100],
   },
-
-  // Add future Next.js options here if needed
 };
 
 export default nextConfig;
