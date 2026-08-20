@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -86,13 +86,11 @@ export default function PremiumRapSheet({
           RAP SHEET BACKGROUND
       ======================================================= */}
 
-      <Image
+      <img
         src="/images/rap-sheet/RapSheet.png"
         alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="pointer-events-none object-cover opacity-20"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+        draggable={false}
       />
 
       {/* Cinematic dark overlay */}
@@ -351,7 +349,7 @@ export default function PremiumRapSheet({
               href="/yard"
               className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 transition hover:text-orange-400"
             >
-              Back to the Yard →
+              Back to the Yard â†’
             </Link>
           </div>
         </div>
@@ -461,3 +459,4 @@ function RecordPanel({
     </section>
   );
 }
+
