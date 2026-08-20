@@ -55,7 +55,7 @@ export default async function ProfilePage() {
             <div>
               <div className="aspect-square overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
                 <img
-                  src="/images/rap-sheet/RapSheet.png"
+                  src="/images/avatars/JesseProfile.png"
                   alt={profile.stage_name ?? "RapYard creator"}
                   className="h-full w-full object-cover"
                 />
@@ -213,5 +213,3 @@ function StatCard({
     </div>
   );
 }
-
-
