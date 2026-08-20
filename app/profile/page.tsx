@@ -54,23 +54,13 @@ export default async function ProfilePage() {
             {/* Avatar */}
             <div>
               <div className="aspect-square overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
-                {profile.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={
-                      profile.stage_name ??
-                      "RapYard creator"
-                    }
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-center text-xs font-bold uppercase tracking-[0.2em] text-zinc-600">
-                    No Avatar
-                  </div>
-                )}
+                <img
+                  src="/images/rap-sheet/RapSheet.png"
+                  alt={profile.stage_name ?? "RapYard creator"}
+                  className="h-full w-full object-cover"
+                />
               </div>
             </div>
-
             {/* Creator information */}
             <div className="flex flex-col justify-center">
 
@@ -223,3 +213,5 @@ function StatCard({
     </div>
   );
 }
+
+
