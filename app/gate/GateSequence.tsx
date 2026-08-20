@@ -1,8 +1,8 @@
 "use client";
 
+import { sendMagicLink as sendMagicLinkAction } from "@/app/actions/sendMagicLink";
 import { useEffect, useState } from "react";
 import { gsap } from "gsap";
-import { createClient } from "@/lib/supabase/client";
 
 export default function GatePage() {
   const [email, setEmail] = useState("");
@@ -97,31 +97,23 @@ export default function GatePage() {
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!email.trim()) return;
-
     setStatus("sending");
     setErrorMessage(null);
 
-    const supabase = createClient();
+    try {
+      await sendMagicLinkAction(email.trim());
 
-const { error } = await supabase.auth.signInWithOtp({
-  email: email.trim(),
-  options: {
-    emailRedirectTo:
-      "https://rapyard.club/auth/callback?next=/gate",
-  },
-});
-
-if (error) {
-  setStatus("error");
-      setErrorMessage(error.message);
-      return;
+      unlockGate();
+      setStatus("sent");
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to send magic link."
+      );
     }
-
-    unlockGate();
-    setStatus("sent");
   }
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
 
@@ -199,3 +191,4 @@ if (error) {
     </main>
   );
 }
+
