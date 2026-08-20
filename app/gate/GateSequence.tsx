@@ -104,15 +104,16 @@ export default function GatePage() {
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/gate`,
-      },
-    });
+const { error } = await supabase.auth.signInWithOtp({
+  email: email.trim(),
+  options: {
+    emailRedirectTo:
+      "https://rapyard.club/auth/callback?next=/gate",
+  },
+});
 
-    if (error) {
-      setStatus("error");
+if (error) {
+  setStatus("error");
       setErrorMessage(error.message);
       return;
     }
