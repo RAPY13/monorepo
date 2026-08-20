@@ -87,7 +87,7 @@ export default function PremiumRapSheet({
       ======================================================= */}
 
       <Image
-        src="/images/rap-sheet/rap-sheet.webp"
+        src="/images/rap-sheet/RapSheet.png"
         alt=""
         fill
         priority

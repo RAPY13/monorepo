@@ -14,7 +14,7 @@ export default function StudioRoom({
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Deep studio room */}
-      <div className="absolute inset-0 bg-[#070706]" />
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/images/booth/studio-booth.webp')" }} />
 
       {/* Acoustic wall panels */}
       <div className="absolute inset-x-0 top-0 h-[62%] bg-gradient-to-b from-zinc-900/80 via-zinc-950/70 to-black" />
