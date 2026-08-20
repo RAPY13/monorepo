@@ -10,8 +10,7 @@ export async function sendMagicLink(email: string) {
 
   const supabase = await createClient();
 
-  const redirectUrl =
-    `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/gate`;
+  const redirectUrl = "https://rapyard.club/auth/callback?next=/gate";
 
   console.log("Redirect URL:", redirectUrl);
 
