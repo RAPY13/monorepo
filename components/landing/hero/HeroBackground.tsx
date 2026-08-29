@@ -14,7 +14,7 @@ export default function HeroBackground() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
         style={{
-          backgroundImage: "url('/rapyard-hero.png')",
+          backgroundImage: "url('/images/hero/RapBlock%20(2).png')",
         }}
       />
 

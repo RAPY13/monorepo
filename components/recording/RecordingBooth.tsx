@@ -59,6 +59,9 @@ export default function RecordingBooth({
   const [speakerLevel, setSpeakerLevel] =
     useState(0);
 
+  const [playbackActive, setPlaybackActive] =
+    useState(false);
+
   const recorderRef =
     useRef<MediaRecorder | null>(null);
 
@@ -76,6 +79,23 @@ export default function RecordingBooth({
 
   const animationRef =
     useRef<number | null>(null);
+
+  const playbackAnimationRef =
+    useRef<number | null>(null);
+
+  const activePlaybackAudioRef =
+    useRef<HTMLAudioElement | null>(null);
+
+  const playbackGraphsRef = useRef(
+    new Map<
+      HTMLAudioElement,
+      {
+        context: AudioContext;
+        source: MediaElementAudioSourceNode;
+        analyser: AnalyserNode;
+      }
+    >(),
+  );
 
   const timerRef =
     useRef<ReturnType<typeof setInterval> | null>(
@@ -610,6 +630,201 @@ export default function RecordingBooth({
   update();
 }
 
+  /*
+   * Drive the studio speaker wall from recorded audio playback.
+   *
+   * Each <audio> element gets one MediaElementAudioSourceNode.
+   * The graph is reused if the same take is paused and replayed.
+   */
+  async function startPlaybackMeter(
+    audio: HTMLAudioElement,
+  ) {
+    if (
+      activePlaybackAudioRef.current &&
+      activePlaybackAudioRef.current !== audio
+    ) {
+      activePlaybackAudioRef.current.pause();
+    }
+
+    if (playbackAnimationRef.current !== null) {
+      cancelAnimationFrame(
+        playbackAnimationRef.current,
+      );
+
+      playbackAnimationRef.current = null;
+    }
+
+    const AudioContextClass =
+      window.AudioContext ||
+      (
+        window as typeof window & {
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return;
+    }
+
+    let graph =
+      playbackGraphsRef.current.get(audio);
+
+    if (!graph) {
+      const context =
+        new AudioContextClass();
+
+      const source =
+        context.createMediaElementSource(audio);
+
+      const analyser =
+        context.createAnalyser();
+
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.82;
+
+      source.connect(analyser);
+      analyser.connect(context.destination);
+
+      graph = {
+        context,
+        source,
+        analyser,
+      };
+
+      playbackGraphsRef.current.set(
+        audio,
+        graph,
+      );
+    }
+
+    if (graph.context.state === "suspended") {
+      await graph.context.resume();
+    }
+
+    activePlaybackAudioRef.current = audio;
+    setPlaybackActive(true);
+
+    const timeData =
+      new Uint8Array(
+        graph.analyser.fftSize,
+      );
+
+    const frequencyData =
+      new Uint8Array(
+        graph.analyser.frequencyBinCount,
+      );
+
+    const updatePlaybackLevel = () => {
+      if (
+        activePlaybackAudioRef.current !== audio ||
+        audio.paused ||
+        audio.ended
+      ) {
+        setPlaybackActive(false);
+        setSpeakerLevel(0);
+        playbackAnimationRef.current = null;
+        return;
+      }
+
+      graph.analyser.getByteTimeDomainData(
+        timeData,
+      );
+
+      let sum = 0;
+
+      for (const value of timeData) {
+        const normalized =
+          (value - 128) / 128;
+
+        sum += normalized * normalized;
+      }
+
+      const rms = Math.sqrt(
+        sum / timeData.length,
+      );
+
+      const overallLevel =
+        Math.min(1, rms * 5);
+
+      graph.analyser.getByteFrequencyData(
+        frequencyData,
+      );
+
+      const bassBins =
+        Math.min(
+          12,
+          frequencyData.length,
+        );
+
+      let bassSum = 0;
+
+      for (
+        let index = 1;
+        index < bassBins;
+        index += 1
+      ) {
+        bassSum += frequencyData[index];
+      }
+
+      const bassLevel =
+        bassBins > 1
+          ? bassSum /
+            (bassBins - 1) /
+            255
+          : 0;
+
+      /*
+       * Bass gets extra weight so the large woofers
+       * visibly hit with kicks and low vocals.
+       */
+      const speakerResponse =
+        Math.min(
+          1,
+          Math.max(
+            overallLevel * 0.72,
+            bassLevel * 1.05,
+          ),
+        );
+
+      setSpeakerLevel(
+        speakerResponse,
+      );
+
+      playbackAnimationRef.current =
+        requestAnimationFrame(
+          updatePlaybackLevel,
+        );
+    };
+
+    updatePlaybackLevel();
+  }
+
+  function stopPlaybackMeter(
+    audio?: HTMLAudioElement,
+  ) {
+    if (
+      audio &&
+      activePlaybackAudioRef.current !== audio
+    ) {
+      return;
+    }
+
+    if (
+      playbackAnimationRef.current !== null
+    ) {
+      cancelAnimationFrame(
+        playbackAnimationRef.current,
+      );
+
+      playbackAnimationRef.current = null;
+    }
+
+    activePlaybackAudioRef.current = null;
+
+    setPlaybackActive(false);
+    setSpeakerLevel(0);
+  }
+
   function stopMeter() {
     if (animationRef.current) {
       cancelAnimationFrame(
@@ -728,10 +943,10 @@ export default function RecordingBooth({
           </div>
 
           {/* Recording environment */}
-          <div className="relative min-h-[650px] overflow-hidden">
+          <div className="relative min-h-[760px] overflow-hidden sm:min-h-[820px]">
   <StudioRoom
     level={speakerLevel}
-    active={isActive}
+    active={isActive || playbackActive}
   />
 
   {/* Existing Booth interface */}
@@ -974,6 +1189,21 @@ export default function RecordingBooth({
               <audio
                 controls
                 src={audioUrl}
+                onPlay={(event) => {
+                  void startPlaybackMeter(
+                    event.currentTarget,
+                  );
+                }}
+                onPause={(event) => {
+                  stopPlaybackMeter(
+                    event.currentTarget,
+                  );
+                }}
+                onEnded={(event) => {
+                  stopPlaybackMeter(
+                    event.currentTarget,
+                  );
+                }}
                 className="mt-6 w-full"
               />
 
@@ -1050,6 +1280,12 @@ export default function RecordingBooth({
                     <TakeRow
                       key={take.id}
                       take={take}
+                      onPlaybackStart={
+                        startPlaybackMeter
+                      }
+                      onPlaybackStop={
+                        stopPlaybackMeter
+                      }
                     />
                   ))}
                 </div>
@@ -1114,8 +1350,16 @@ export default function RecordingBooth({
 
 function TakeRow({
   take,
+  onPlaybackStart,
+  onPlaybackStop,
 }: {
   take: RecordingTake;
+  onPlaybackStart: (
+    audio: HTMLAudioElement,
+  ) => void | Promise<void>;
+  onPlaybackStop: (
+    audio?: HTMLAudioElement,
+  ) => void;
 }) {
   const [url, setUrl] =
     useState<string | null>(null);
@@ -1205,7 +1449,23 @@ function TakeRow({
         <audio
           controls
           autoPlay
+          crossOrigin="anonymous"
           src={url}
+          onPlay={(event) => {
+            void onPlaybackStart(
+              event.currentTarget,
+            );
+          }}
+          onPause={(event) => {
+            onPlaybackStop(
+              event.currentTarget,
+            );
+          }}
+          onEnded={(event) => {
+            onPlaybackStop(
+              event.currentTarget,
+            );
+          }}
           className="mt-4 w-full"
         />
       )}

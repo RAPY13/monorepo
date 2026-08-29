@@ -5,9 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  CreditCard,
   Disc3,
   FileText,
   Home,
+  LockKeyhole,
   Mic2,
   Settings,
   Swords,
@@ -63,6 +65,18 @@ const navigation = [
     href: "/notifications",
     icon: Bell,
   },
+  {
+    label: "Account",
+    href: "/account",
+    icon: CreditCard,
+  },
+];
+
+const futureReleases = [
+  "Cypher",
+  "Battle Arena",
+  "Tape Room",
+  "Marketplace",
 ];
 
 export default function AppSidebar({
@@ -124,6 +138,29 @@ export default function AppSidebar({
             </Link>
           );
         })}
+
+        <div className="mt-8 border-t border-zinc-900 pt-6">
+          <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-600">
+            Future Releases
+          </div>
+
+          <div className="space-y-1">
+            {futureReleases.map((release) => (
+              <div
+                key={release}
+                title={`${release} is coming soon`}
+                className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold text-zinc-700"
+                aria-label={`${release}, coming soon`}
+              >
+                <LockKeyhole className="h-4 w-4 text-zinc-800" />
+                <span>{release}</span>
+                <span className="ml-auto text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-800">
+                  Soon
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* User */}

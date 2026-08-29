@@ -142,7 +142,7 @@ export default function RecordFlowScreen() {
             text-zinc-700
           "
         >
-          Record Flow
+            Studio
         </span>
       </div>
 
@@ -194,9 +194,9 @@ export default function RecordFlowScreen() {
               md:text-8xl
             "
           >
-            RECORD
+            STUDIO
             <br />
-            FLOW.
+            RECORD.
           </h2>
 
           <div
@@ -363,8 +363,8 @@ export default function RecordFlowScreen() {
           "
         >
           <Image
-            src="/images/yard/rapyard-performer.webp"
-            alt="RapYard performer"
+            src="/images/booth/studio-booth.webp"
+            alt="RapYard studio booth"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="

@@ -27,7 +27,7 @@ const flowMap: FlowMapItem[] = [
   },
   {
     number: "03",
-    label: "RECORD",
+    label: "STUDIO",
     locked: false,
   },
   {

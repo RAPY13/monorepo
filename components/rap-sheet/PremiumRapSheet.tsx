@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -25,6 +25,9 @@ type PremiumRapSheetProps = {
     primary_role: string | null;
     role: string | null;
     created_at?: string | null;
+    lane?: string | null;
+    level?: number | null;
+    xp?: number | null;
   };
 };
 
@@ -60,6 +63,10 @@ export default function PremiumRapSheet({
           genre.trim().length > 0,
       )
     : [];
+  const styleTags: string[] = [];
+  const lane = profile.lane
+    ? profile.lane.replace(/_/g, " ").toUpperCase()
+    : roleLabel.toUpperCase();
 
   const joinedDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString(
@@ -87,7 +94,7 @@ export default function PremiumRapSheet({
       ======================================================= */}
 
       <img
-        src="/images/rap-sheet/RapSheet.png"
+        src="/images/rap-sheet/RapSheetDefault.webp"
         alt=""
         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
         draggable={false}
@@ -113,7 +120,7 @@ export default function PremiumRapSheet({
         <section className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-7xl px-6 pb-14 pt-8 lg:px-10 lg:pb-20">
             {/* Top bar */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.45em] text-orange-500">
                   RapYard
@@ -124,14 +131,30 @@ export default function PremiumRapSheet({
                 </p>
               </div>
 
-              <Link
-                href="/rap-sheet/edit"
-                className="group flex items-center gap-2 rounded-full border border-zinc-800 bg-black/70 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300 backdrop-blur transition hover:border-orange-500/50 hover:text-white"
-              >
-                Edit Rap Sheet
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/rap-sheet"
+                  className="group flex items-center gap-2 rounded-full border border-zinc-800 bg-black/70 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300 backdrop-blur transition hover:border-orange-500/50 hover:text-white"
+                >
+                  Edit Rap Sheet
 
-                <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </Link>
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+
+                <Link
+                  href="/yard"
+                  className="rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-orange-300 transition hover:bg-orange-500 hover:text-black"
+                >
+                  Back to Yard
+                </Link>
+
+                <Link
+                  href="/yard"
+                  className="rounded-full bg-orange-500 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-black transition hover:bg-orange-400"
+                >
+                  Enter the Yard →
+                </Link>
+              </div>
             </div>
 
             {/* Creator identity */}
@@ -320,6 +343,20 @@ export default function PremiumRapSheet({
             </div>
           </section>
 
+          <section className="mt-6 rounded-[2rem] border border-orange-500/30 bg-black/85 p-7 backdrop-blur-md sm:p-9">
+            <SectionLabel>Your RapYard Identity</SectionLabel>
+            <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <IdentityRow icon={<Mic2 className="h-4 w-4" />} label="Lane" value={lane} />
+              <IdentityRow icon={<Music2 className="h-4 w-4" />} label="Style" value={styleTags.length ? styleTags.join(" • ") : genres.join(" • ") || "Not set"} />
+              <IdentityRow icon={<Mic2 className="h-4 w-4" />} label="Mic" value="NOT TESTED" />
+              <IdentityRow icon={<Trophy className="h-4 w-4" />} label="Badge" value="FRESH INK" />
+            </div>
+            <div className="mt-7 border-t border-zinc-900 pt-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Yard Code</p>
+              <p className="mt-2 text-xl font-black uppercase text-orange-400">{`${profile.lane || "YARD"}-${profile.username || "CREATOR"}`.toUpperCase()}</p>
+            </div>
+          </section>
+
           {/* ==================================================
               CREATIVE LANES
           =================================================== */}
@@ -345,12 +382,21 @@ export default function PremiumRapSheet({
               Respect isn't earned. It's recorded.
             </p>
 
-            <Link
-              href="/yard"
-              className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 transition hover:text-orange-400"
-            >
-              Back to the Yard â†’
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/rap-sheet"
+                className="rounded-full border border-zinc-800 bg-black/70 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300 transition hover:border-orange-500/50 hover:text-white"
+              >
+                Edit Rap Sheet
+              </Link>
+
+              <Link
+                href="/yard"
+                className="rounded-full bg-orange-500 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-black transition hover:bg-orange-400"
+              >
+                Enter the Yard →
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -459,4 +505,6 @@ function RecordPanel({
     </section>
   );
 }
+
+
 

@@ -9,6 +9,7 @@ export type YardCardProps = {
   href?: string;
   locked?: boolean;
   badge?: string;
+  recordHref?: string;
 };
 
 export default function YardCard({
@@ -18,6 +19,7 @@ export default function YardCard({
   href,
   locked = false,
   badge,
+  recordHref = "/booth",
 }: YardCardProps) {
   const content = (
     <div
@@ -257,12 +259,22 @@ export default function YardCard({
   }
 
   return (
-    <Link
-      href={href}
-      aria-label={`Enter ${title}`}
-      className="block"
-    >
-      {content}
-    </Link>
+    <div className="space-y-3">
+      <Link
+        href={href}
+        aria-label={`Enter ${title}`}
+        className="block"
+      >
+        {content}
+      </Link>
+      <Link
+        href={recordHref}
+        aria-label={`Record from ${title}`}
+        className="flex items-center justify-center gap-2 border border-orange-500/40 bg-orange-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/20 hover:text-orange-200"
+      >
+        <span aria-hidden="true">●</span>
+        Record Now
+      </Link>
+    </div>
   );
 }

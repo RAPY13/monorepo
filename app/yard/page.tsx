@@ -28,5 +28,5 @@ export default async function YardPage() {
     redirect("/rap-sheet");
   }
 
-  return <YardHome />;
+  return <YardHome profile={profile} />;
 }

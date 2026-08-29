@@ -1,8 +1,9 @@
 "use client";
 
-import { sendMagicLink as sendMagicLinkAction } from "@/app/actions/sendMagicLink";
 import { useEffect, useState } from "react";
 import { gsap } from "gsap";
+import { createClient } from "@/lib/supabase/client";
+import { sendMagicLink as sendMagicLinkAction } from "@/app/actions/sendMagicLink";
 
 export default function GatePage() {
   const [email, setEmail] = useState("");
@@ -98,22 +99,32 @@ export default function GatePage() {
     e.preventDefault();
 
     setStatus("sending");
-    setErrorMessage(null);
+    setErrorMessage("");
 
     try {
-      await sendMagicLinkAction(email.trim());
+      const result = await sendMagicLinkAction(email);
 
-      unlockGate();
+      if (!result.success) {
+        setStatus("error");
+        setErrorMessage(
+          result.error ?? "Unable to send magic link."
+        );
+        return;
+      }
+
       setStatus("sent");
-    } catch (error) {
+    } catch (err) {
+      console.error("[Gate] Magic link error:", err);
+
       setStatus("error");
       setErrorMessage(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Unable to send magic link."
       );
     }
   }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
 
@@ -191,4 +202,3 @@ export default function GatePage() {
     </main>
   );
 }
-

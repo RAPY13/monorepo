@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
 import { hasActiveSubscription, supabaseAdmin } from "@/lib/billing";
-import { stripe } from "@/lib/stripe";
+import { getBillingPlanFromPriceId, stripe } from "@/lib/stripe";
 
 async function syncSubscription(
   subscription: Stripe.Subscription,
@@ -10,10 +10,22 @@ async function syncSubscription(
 ) {
   const userId =
     subscription.metadata.supabase_user_id ?? fallbackMetadata.supabase_user_id;
-  const plan = subscription.metadata.plan ?? fallbackMetadata.plan;
+  const inferredPlanFromPrice =
+    getBillingPlanFromPriceId(
+      subscription.items.data[0]?.price && typeof subscription.items.data[0].price !== "string"
+        ? subscription.items.data[0].price.id
+        : null,
+    ) ?? null;
+  const plan =
+    subscription.metadata.plan ?? fallbackMetadata.plan ?? inferredPlanFromPrice;
 
   if (!userId || !plan) {
-    console.error("[Stripe Webhook] Subscription metadata is incomplete", subscription.id);
+    console.error("[Stripe Webhook] Subscription metadata is incomplete", {
+      subscriptionId: subscription.id,
+      metadata: subscription.metadata,
+      fallbackMetadata,
+      inferredPlanFromPrice,
+    });
     return;
   }
 

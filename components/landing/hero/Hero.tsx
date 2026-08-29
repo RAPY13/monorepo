@@ -13,7 +13,7 @@ import HeroCTA from "./HeroCTA";
 import HeroScroll from "./HeroScroll";
 import HeroBleedThaBlock from "./HeroBleedThaBlock";
 
-import MagicLinkForm from "@/components/auth/MagicLinkForm";
+import MagicLinkFloatingButton from "./MagicLinkFloatingButton";
 
 export default function Hero() {
   const heroRef = useRef<HTMLElement | null>(null);
@@ -67,15 +67,6 @@ export default function Hero() {
             duration: 0.9,
           },
           "-=0.15",
-        )
-        .from(
-          "[data-hero='magic-link']",
-          {
-            opacity: 0,
-            y: 24,
-            duration: 0.8,
-          },
-          "+=0.15",
         )
         .from(
           "[data-hero='cta']",
@@ -136,7 +127,7 @@ export default function Hero() {
                 className="relative mx-auto flex justify-center"
               >
                 <Image
-                  src="/images/hero/logo.webp"
+                  src="/images/hero/logo.png"
                   alt="RapYard"
                   priority
                   width={1200}
@@ -185,32 +176,6 @@ export default function Hero() {
               </section>
 
               {/* ================================================== */}
-              {/* MAGIC LINK                                           */}
-              {/* ================================================== */}
-
-              <div
-                data-hero="magic-link"
-                className="
-                  mt-12
-                  mx-auto
-                  w-full
-                  max-w-3xl
-                  rounded-xl
-                  border
-                  border-orange-500/30
-                  bg-black/55
-                  p-6
-                  backdrop-blur-sm
-                "
-              >
-                <MagicLinkForm />
-
-                <p className="mt-4 text-sm text-zinc-400">
-                  No passwords • Secure Magic Link Sign In
-                </p>
-              </div>
-
-              {/* ================================================== */}
               {/* CTA                                                  */}
               {/* ================================================== */}
 
@@ -240,6 +205,8 @@ export default function Hero() {
         {/* ========================================================== */}
 
         <HeroBleedThaBlock />
+
+        <MagicLinkFloatingButton />
       </div>
 
       {/* ============================================================ */}

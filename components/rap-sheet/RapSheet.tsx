@@ -32,6 +32,21 @@ const GENRES = [
   "Freestyle",
 ];
 
+const LANES = [
+  "underground",
+  "old_school",
+  "freestyle",
+  "battle",
+] as const;
+
+const STYLE_TAGS = [
+  "aggressive",
+  "chill",
+  "storytelling",
+  "punchline",
+  "melodic",
+] as const;
+
 const ROLES: Array<{
   value: Exclude<PrimaryRole, "">;
   label: string;
@@ -70,6 +85,10 @@ export default function RapSheet({
   const [bio, setBio] = useState("");
   const [role, setRole] = useState<PrimaryRole>("");
   const [genres, setGenres] = useState<string[]>([]);
+  const [laneId, setLaneId] = useState("");
+  const [styleTags, setStyleTags] = useState<string[]>([]);
+  const [micStatus, setMicStatus] = useState<"not_tested" | "ready" | "denied">("not_tested");
+  const [micLevel, setMicLevel] = useState(0);
 
   const [avatarUrl, setAvatarUrl] = useState("");
   const [visualChoice, setVisualChoice] = useState<
@@ -103,7 +122,7 @@ export default function RapSheet({
         await supabase
           .from("profiles")
           .select(
-            "rap_name, username, avatar_url, bio, city, genres, primary_role, role",
+            "rap_name, username, avatar_url, bio, city, genres, primary_role, role, lane, level",
           )
           .eq("id", currentUser.id)
           .maybeSingle();
@@ -135,6 +154,10 @@ export default function RapSheet({
               )
             : [],
         );
+        setLaneId(profile.lane ?? "");
+        setStyleTags([]);
+        setMicStatus("not_tested");
+        setMicLevel(profile.level ?? 0);
 
         const existingRole =
           profile.primary_role ??
@@ -192,6 +215,38 @@ export default function RapSheet({
         ? current.filter((item) => item !== genre)
         : [...current, genre],
     );
+  }
+
+  function toggleStyleTag(tag: string) {
+    setStyleTags((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : [...current, tag],
+    );
+    setError("");
+  }
+
+  async function runMicTest() {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const context = new AudioContext();
+      const source = context.createMediaStreamSource(stream);
+      const analyser = context.createAnalyser();
+      const samples = new Uint8Array(analyser.fftSize);
+      source.connect(analyser);
+      analyser.getByteTimeDomainData(samples);
+      const level = Math.round(
+        (samples.reduce((sum, sample) => sum + Math.abs(sample - 128), 0) / samples.length) * 2,
+      );
+      stream.getTracks().forEach((track) => track.stop());
+      await context.close();
+      setMicLevel(level);
+      setMicStatus("ready");
+    } catch {
+      setMicStatus("denied");
+      setError("Microphone permission is required for the mic test.");
+    }
   }
 
   function validate(): boolean {
@@ -255,6 +310,10 @@ export default function RapSheet({
           city: city.trim(),
           genres,
           primaryRole: role,
+          laneId,
+          styleTags,
+          micStatus,
+          level: micLevel,
         });
 
         setSuccess(
@@ -596,6 +655,57 @@ export default function RapSheet({
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* RapYard identity */}
+            <div className="mt-10 border-t border-zinc-900 pt-8">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-orange-500">
+                Pick Your Lane
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {LANES.map((lane) => (
+                  <button
+                    key={lane}
+                    type="button"
+                    onClick={() => setLaneId(lane)}
+                    aria-pressed={laneId === lane}
+                    className={`border px-4 py-4 text-left text-sm font-black uppercase tracking-[0.12em] transition ${laneId === lane ? "border-orange-500 bg-orange-500 text-black" : "border-zinc-800 bg-black text-zinc-400 hover:border-orange-500"}`}
+                  >
+                    {lane.replace("_", " ")}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-8 text-xs font-bold uppercase tracking-[0.3em] text-orange-500">
+                Style Tags
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {STYLE_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleStyleTag(tag)}
+                    aria-pressed={styleTags.includes(tag)}
+                    className={`border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition ${styleTags.includes(tag) ? "border-orange-500 bg-orange-500 text-black" : "border-zinc-800 bg-black text-zinc-400 hover:border-orange-500"}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4 border border-zinc-800 bg-black p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-zinc-400">Quick Mic Test</p>
+                  <p className="mt-2 text-sm text-zinc-500">{micStatus === "ready" ? `MIC STATUS: READY · LEVEL ${micLevel}` : "Mic permission and level check"}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void runMicTest()}
+                  className="border border-orange-500 px-4 py-3 text-xs font-black uppercase tracking-[0.15em] text-orange-400 transition hover:bg-orange-500 hover:text-black"
+                >
+                  {micStatus === "ready" ? "Run Again" : "Test Mic"}
+                </button>
               </div>
             </div>
 

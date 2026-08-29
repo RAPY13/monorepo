@@ -1,6 +1,7 @@
 ﻿import Smoke from "@/components/landing/cinematic/Smoke";
 import Image from "next/image";
 import Link from "next/link";
+import MagicLinkFloatingButton from "@/components/landing/hero/MagicLinkFloatingButton";
 
 export default function Hero() {
   return (
@@ -28,9 +29,9 @@ export default function Hero() {
           />
         </div>
 
-        <p className="mx-auto mt-10 max-w-[64rem] text-[clamp(1.45rem,2.6vw,1.62rem)] leading-[1.24] text-zinc-100">
-          <strong>RapYard is the rap workshop in your pocket.</strong>
-        </p>
+        <div className="mx-auto mt-10 flex justify-center">
+          <MagicLinkFloatingButton />
+        </div>
 
         <p className="mx-auto mt-10 max-w-[64rem] text-[clamp(1.4rem,2.4vw,1.56rem)] leading-[1.25] text-zinc-200">
           Everything you need to become a better rapper.

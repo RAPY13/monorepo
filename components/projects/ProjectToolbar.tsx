@@ -14,8 +14,10 @@ import { createRecordingSession } from "@/lib/recording/createSession";
 
 export default function ProjectToolbar({
   projectId,
+  latestSessionId,
 }: {
   projectId: string;
+  latestSessionId: string | null;
 }) {
   const router = useRouter();
 
@@ -89,14 +91,25 @@ export default function ProjectToolbar({
 
       <button
         type="button"
-        disabled
+        onClick={() => {
+          if (latestSessionId) {
+            router.push(`/sessions/${latestSessionId}`);
+          }
+        }}
+        disabled={!latestSessionId}
         className="
           rounded-xl
           border
           border-zinc-700
           px-6
           py-3
-          text-zinc-500
+          text-zinc-300
+          transition
+          hover:border-orange-500
+          hover:text-white
+          disabled:cursor-not-allowed
+          disabled:border-zinc-800
+          disabled:text-zinc-600
         "
       >
         <span className="flex items-center gap-2">

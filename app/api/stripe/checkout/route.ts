@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { requireUser } from "@/lib/auth";
 import {
+  getStripePriceId,
   isBillingPlan,
   stripe,
-  stripePriceIds,
 } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/billing";
 
@@ -18,10 +18,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid billing plan." }, { status: 400 });
   }
 
-  const priceId = stripePriceIds[body.plan];
-  if (!priceId) {
+  let priceId: string;
+  try {
+    priceId = getStripePriceId(body.plan);
+  } catch (error) {
+    console.error("[Stripe Checkout] Missing Stripe plan configuration:", error);
     return NextResponse.json(
-      { error: `Stripe price is not configured for ${body.plan}.` },
+      { error: `Stripe price is not configured for ${body.plan}. Check the Stripe env vars.` },
       { status: 503 },
     );
   }

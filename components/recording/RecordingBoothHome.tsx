@@ -1,12 +1,30 @@
-"use client";
-
 import Link from "next/link";
+import Image from "next/image";
 import { Mic2, Plus, Waves } from "lucide-react";
 
 export default function RecordingBoothHome() {
   return (
     <section className="min-h-full bg-black px-6 py-10 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
+        <div className="relative mb-10 min-h-[280px] overflow-hidden border border-zinc-900 bg-zinc-950 md:min-h-[360px]">
+          <Image
+            src="/images/booth/studio-booth.webp"
+            alt="RapYard studio booth"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 1200px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/45 to-transparent" />
+          <div className="relative flex min-h-[280px] max-w-xl flex-col justify-end p-7 md:min-h-[360px] md:p-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-orange-400">Studio</p>
+            <h2 className="mt-3 text-4xl font-black uppercase tracking-tight text-white md:text-6xl">Your Room. Your Take.</h2>
+            <Link href="/booth?instant=1" className="mt-6 inline-flex w-fit items-center gap-3 border border-orange-400 bg-orange-500 px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black transition hover:bg-orange-400">
+              <Mic2 className="h-4 w-4" /> Record Instantly
+            </Link>
+          </div>
+        </div>
+
         <div className="max-w-3xl">
           <div className="text-xs font-bold uppercase tracking-[0.3em] text-orange-500">
             Recording Booth

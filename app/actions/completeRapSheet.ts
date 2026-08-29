@@ -11,6 +11,10 @@ type CompleteRapSheetInput = {
   city: string;
   genres: string[];
   primaryRole: string;
+  laneId: string;
+  styleTags: string[];
+  micStatus: "not_tested" | "ready" | "denied";
+  level: number;
 };
 
 export async function completeRapSheet(
@@ -49,6 +53,7 @@ export async function completeRapSheet(
   const username = input.username.trim().replace(/^@/, "");
   const bio = input.bio.trim();
   const city = input.city.trim();
+  const laneId = input.laneId.trim();
 
   if (!rapName) {
     throw new Error("Rap Name is required.");
@@ -56,6 +61,10 @@ export async function completeRapSheet(
 
   if (!username) {
     throw new Error("Username is required.");
+  }
+
+  if (!laneId) {
+    throw new Error("Choose your lane.");
   }
 
   if (bio.length > 300) {
@@ -69,6 +78,13 @@ export async function completeRapSheet(
         (genre): genre is string =>
           typeof genre === "string" &&
           genre.trim().length > 0,
+      )
+    : [];
+
+  const styleTags = Array.isArray(input.styleTags)
+    ? input.styleTags.filter(
+        (tag): tag is string =>
+          typeof tag === "string" && tag.trim().length > 0,
       )
     : [];
 
@@ -99,6 +115,8 @@ export async function completeRapSheet(
     primary_role: input.primaryRole || null,
     role: input.primaryRole || null,
     onboarding_complete: true,
+    lane: laneId,
+    level: Math.max(0, Math.round(input.level)),
   };
 
   // ------------------------------------------------------------
@@ -202,7 +220,7 @@ export async function completeRapSheet(
   }
 
   // ------------------------------------------------------------
-  // No profile exists — create it
+  // No profile exists â€” create it
   // ------------------------------------------------------------
 
   const insertById = await supabase
@@ -359,3 +377,4 @@ async function syncCreatorProfile({
     );
   }
 }
+

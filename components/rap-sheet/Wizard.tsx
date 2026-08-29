@@ -270,6 +270,10 @@ export default function Wizard({ user }: WizardProps) {
         city: data.city.trim(),
         genres: data.genres,
         primaryRole: data.primaryRole,
+        laneId: "underground",
+        styleTags: [],
+        micStatus: "not_tested",
+        level: 0,
       });
 
       if (!result?.success) {

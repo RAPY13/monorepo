@@ -4,13 +4,17 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-24",
   "compatibility_flags": ["nodejs_compat"],
+
+  "vars": {
+    "NEXT_PRIVATE_MINIMAL_MODE": "1"
+  },
+
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+
   "observability": {
     "enabled": true
   }
 }
-
-

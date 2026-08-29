@@ -2,10 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { sendMagicLink } from "@/app/actions/sendMagicLink";
+import Toast from "@/components/ui/Toast";
 
-export default function MagicLinkForm() {
+type Props = {
+  onSuccess?: (destination?: string) => void;
+};
+
+export default function MagicLinkForm({ onSuccess }: Props) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -21,13 +27,26 @@ export default function MagicLinkForm() {
 
     startTransition(async () => {
       try {
-        await sendMagicLink(trimmedEmail);
+        const res = await sendMagicLink(trimmedEmail);
 
-        setMessage(
-          "🔥 Your Gate Pass has been sent. Check your email to unlock the entrance to RapYard."
-        );
+        if (res && res.success) {
+          const successMsg =
+            "🔥 Your Gate Pass has been sent. Check your email to unlock the entrance to RapYard.";
 
-        setEmail("");
+          setMessage(successMsg);
+          setShowToast(true);
+
+          setEmail("");
+
+          if (onSuccess) onSuccess("/rap-sheet");
+        } else {
+          setIsError(true);
+
+          setMessage(
+            (res && (res as any).error) ||
+              "Unable to send your Gate Pass. Please try again."
+          );
+        }
       } catch (err) {
         setIsError(true);
 
@@ -87,6 +106,14 @@ export default function MagicLinkForm() {
           {message}
         </div>
       )}
+
+      <Toast
+        message={showToast ? message : ""}
+        variant={isError ? "error" : "success"}
+        onClose={() => {
+          setShowToast(false);
+        }}
+      />
     </form>
   );
 }

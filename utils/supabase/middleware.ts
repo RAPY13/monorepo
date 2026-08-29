@@ -50,12 +50,7 @@ export async function updateSession(
     error,
   } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error(
-      "Supabase auth error:",
-      error
-    );
-  }
+  if (error) console.error("Supabase auth error:", error.message);
 
   return {
     response,

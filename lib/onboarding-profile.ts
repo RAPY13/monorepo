@@ -14,6 +14,12 @@ export type OnboardingProfile = {
   tenant_region?: string | null;
   tenant_banner_url?: string | null;
   tenant_faction?: string | null;
+  rap_name?: string | null;
+  city?: string | null;
+  bio?: string | null;
+  lane?: string | null;
+  level?: number | null;
+  xp?: number | null;
 };
 
 async function queryByKey(
@@ -24,7 +30,7 @@ async function queryByKey(
   return supabase
     .from("profiles")
     .select(
-      "id, user_id, username, avatar_url, badges, role, tenant, onboarding_complete, tenant_region, tenant_banner_url, tenant_faction"
+      "id, username, avatar_url, badges, role, onboarding_complete, rap_name, city, bio, lane, level, xp"
     )
     .eq(key, userId)
     .maybeSingle<OnboardingProfile>();
@@ -108,3 +114,5 @@ export async function ensureProfileRow(
 
   return { error: insertId.error.message };
 }
+
+

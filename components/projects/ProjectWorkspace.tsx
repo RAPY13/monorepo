@@ -45,6 +45,7 @@ export default function ProjectWorkspace({
       <div className="mx-auto max-w-[1500px]">
         <ProjectToolbar
           projectId={project.id}
+          latestSessionId={sessions[0]?.id ?? null}
         />
 
         <section className="mt-8 grid gap-8 xl:grid-cols-3">

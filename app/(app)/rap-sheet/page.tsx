@@ -18,7 +18,7 @@ export default async function RapSheetPage() {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "rap_name, username, avatar_url, bio, city, genres, primary_role, role, created_at, onboarding_complete",
+      "rap_name, username, avatar_url, bio, city, genres, primary_role, role, created_at, onboarding_complete, lane, level, xp",
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -27,12 +27,12 @@ export default async function RapSheetPage() {
     console.error("[RapSheet] Profile load failed:", error);
   }
 
-  // No profile yet → use the existing builder.
-  if (!profile) {
+  // Missing or incomplete profiles stay in the identity builder.
+  if (!profile || !profile.onboarding_complete) {
     return <RapSheet user={user} />;
   }
 
-  // Profile exists → show the finished Rap Sheet.
+  // Profile exists â†’ show the finished Rap Sheet.
   return (
     <PremiumRapSheet
       profile={{
@@ -47,8 +47,13 @@ export default async function RapSheetPage() {
         primary_role: profile.primary_role,
         role: profile.role,
         created_at: profile.created_at,
+        lane: profile.lane,
+        level: profile.level,
+        xp: profile.xp,
       }}
     />
   );
 }
+
+
 
