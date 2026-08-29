@@ -70,6 +70,36 @@ export default function BillingPlans({
     ? formatPlanName(currentPlan)
     : "Free";
 
+  async function manageMembership() {
+    setLoadingPlan(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
+      });
+
+      const result = (await response.json()) as {
+        url?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !result.url) {
+        throw new Error(
+          result.error ?? "Unable to open membership management.",
+        );
+      }
+
+      window.location.assign(result.url);
+    } catch (portalError) {
+      setError(
+        portalError instanceof Error
+          ? portalError.message
+          : "Unable to open membership management.",
+      );
+    }
+  }
+
   async function startCheckout(plan: Plan) {
     if (active && currentPlan === plan) return;
 

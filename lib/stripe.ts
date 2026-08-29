@@ -6,7 +6,9 @@ if (!secretKey) {
   throw new Error("STRIPE_SECRET_KEY is not configured.");
 }
 
-export const stripe = new Stripe(secretKey);
+export const stripe = new Stripe(secretKey, {
+  httpClient: Stripe.createFetchHttpClient(),
+});
 
 export const stripePriceIds = {
   member: process.env.STRIPE_MEMBER_PRICE_ID,
