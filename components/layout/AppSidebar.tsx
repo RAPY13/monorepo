@@ -66,9 +66,14 @@ const navigation = [
     icon: Bell,
   },
   {
+    label: "Membership",
+    href: "/billing",
+    icon: CreditCard,
+  },
+  {
     label: "Account",
     href: "/account",
-    icon: CreditCard,
+    icon: UserRound,
   },
 ];
 
