@@ -18,7 +18,6 @@ export default async function AccountPage() {
     .maybeSingle();
 
   const access = getBillingAccess(profile?.subscription_plan, profile?.subscription_status);
-  const portalUrl = process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL;
 
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white lg:px-10">
@@ -41,20 +40,6 @@ export default async function AccountPage() {
               <h2 className="text-xl font-black uppercase">Manage billing</h2>
               <p className="mt-1 text-sm text-zinc-500">Update payment details or cancel through Stripe.</p>
             </div>
-            {portalUrl ? (
-              <a
-                href={portalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="border border-orange-500/50 px-4 py-3 text-xs font-black uppercase tracking-wider text-orange-400 transition hover:bg-orange-500 hover:text-black"
-              >
-                Manage billing
-              </a>
-            ) : (
-              <span className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-600">
-                Billing portal unavailable
-              </span>
-            )}
           </div>
         </section>
 
