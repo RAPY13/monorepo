@@ -11,3 +11,5 @@ tsconfig.tsbuildinfo
 
 # Dev Vars
 .dev*
+# Local agent/tooling files
+.agents/
