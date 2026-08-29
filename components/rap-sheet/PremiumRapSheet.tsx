@@ -79,13 +79,12 @@ export default function PremiumRapSheet({
     : "2026";
 
   /*
-   * Your personal RapYard avatar.
-   *
-   * Everyone else continues using their database avatar.
+   * Use the generic default avatar for owners who haven't
+   * uploaded a custom image yet, instead of a personal asset.
    */
   const avatarSrc = isOwner
-    ? "/images/avatars/JesseProfile.png"
-    : profile.avatar_url;
+    ? "/images/avatars/male-default.jpeg"
+    : profile.avatar_url ?? "/images/avatars/male-default.jpeg";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-white">

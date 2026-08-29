@@ -55,7 +55,7 @@ export default async function ProfilePage() {
             <div>
               <div className="aspect-square overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900">
                 <img
-                  src="/images/avatars/JesseProfile.png"
+                  src="/images/avatars/male-default.jpeg"
                   alt={profile.stage_name ?? "RapYard creator"}
                   className="h-full w-full object-cover"
                 />
