@@ -31,11 +31,10 @@ export default function MagicLinkForm({ onSuccess }: Props) {
 
         if (res && res.success) {
           const successMsg =
-            "🔥 Your Gate Pass has been sent. Check your email to unlock the entrance to RapYard.";
+            "Your Gate Pass has been sent. Check your email to unlock the entrance to RapYard.";
 
           setMessage(successMsg);
           setShowToast(true);
-
           setEmail("");
 
           if (onSuccess) onSuccess("/rap-sheet");
@@ -44,7 +43,7 @@ export default function MagicLinkForm({ onSuccess }: Props) {
 
           setMessage(
             (res && (res as any).error) ||
-              "Unable to send your Gate Pass. Please try again."
+              "Unable to send your Gate Pass. Please try again.",
           );
         }
       } catch (err) {
@@ -53,7 +52,7 @@ export default function MagicLinkForm({ onSuccess }: Props) {
         setMessage(
           err instanceof Error
             ? err.message
-            : "Unable to send your Gate Pass. Please try again."
+            : "Unable to send your Gate Pass. Please try again.",
         );
       }
     });
@@ -62,14 +61,36 @@ export default function MagicLinkForm({ onSuccess }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto w-full max-w-md space-y-5"
+      className="mx-auto w-full max-w-2xl"
     >
+      <div className="mb-5 text-center">
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-orange-400">
+          Your Gate Pass
+        </p>
+
+        <h2 className="mt-2 text-2xl font-black uppercase tracking-tight text-white sm:text-3xl">
+          Enter Your Email
+        </h2>
+
+        <p className="mt-2 text-sm text-zinc-400">
+          We&apos;ll send you a secure Magic Link to enter RapYard.
+        </p>
+      </div>
+
+      <label
+        htmlFor="rapyard-email"
+        className="mb-2 block text-left text-xs font-bold uppercase tracking-[0.2em] text-zinc-400"
+      >
+        Email Address
+      </label>
+
       <input
+        id="rapyard-email"
         type="email"
         autoComplete="email"
         required
         disabled={isPending}
-        placeholder="Enter your email"
+        placeholder="you@example.com"
         value={email}
         onChange={(e) => {
           setEmail(e.target.value);
@@ -79,25 +100,35 @@ export default function MagicLinkForm({ onSuccess }: Props) {
             setIsError(false);
           }
         }}
-        className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-5 py-4 text-white placeholder:text-zinc-500 outline-none transition duration-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl border border-white/15 bg-black/80 px-5 py-5 text-base text-white shadow-inner outline-none transition duration-300 placeholder:text-zinc-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
       />
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-xl bg-orange-500 px-5 py-4 font-bold uppercase tracking-wider text-black transition duration-300 hover:bg-orange-400 hover:shadow-[0_0_30px_rgba(249,115,22,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="group relative mt-5 w-full overflow-hidden rounded-xl border-2 border-orange-500 bg-orange-500/10 px-6 py-5 text-center transition-all duration-300 hover:bg-orange-500/20 hover:shadow-[0_0_45px_rgba(249,115,22,0.55)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:py-6"
       >
-        {isPending ? "Sending Gate Pass..." : "ENTER THE YARD"}
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.18),transparent_65%)]" />
+
+        <span className="relative block text-2xl font-black uppercase tracking-[0.08em] text-white sm:text-3xl">
+          {isPending ? "Sending Gate Pass..." : "Enter The Yard"}
+        </span>
+
+        {!isPending && (
+          <span className="relative mt-1 block text-xs font-black uppercase tracking-[0.3em] text-orange-400 sm:text-sm">
+            Sign In With Magic Link
+          </span>
+        )}
       </button>
 
-      <p className="text-center text-xs text-zinc-500">
-        Secure passwordless sign in powered by Magic Link.
+      <p className="mt-4 text-center text-xs leading-5 text-zinc-500">
+        Passwordless · Secure · No password to remember
       </p>
 
       {message && (
         <div
           aria-live="polite"
-          className={`rounded-lg border px-4 py-3 text-center text-sm ${
+          className={`mt-5 rounded-lg border px-4 py-3 text-center text-sm ${
             isError
               ? "border-red-500/40 bg-red-950/30 text-red-300"
               : "border-emerald-500/30 bg-emerald-950/20 text-emerald-300"

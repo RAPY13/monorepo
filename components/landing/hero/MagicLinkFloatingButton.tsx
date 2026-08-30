@@ -9,45 +9,113 @@ export default function MagicLinkFloatingButton() {
   return (
     <>
       <button
-        aria-label="Open Magic Link"
+        type="button"
+        aria-label="Enter RapYard with Magic Link"
         onClick={() => setOpen(true)}
-        className={
-          "magic-floating-btn fixed bottom-8 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-orange-500 text-black shadow-[0_0_30px_rgba(249,115,22,0.45)] transition-transform duration-200 hover:scale-105"
-        }
+        className="
+          fixed
+          bottom-6
+          left-1/2
+          z-50
+          w-[calc(100%-2rem)]
+          max-w-md
+          -translate-x-1/2
+          overflow-hidden
+          rounded-xl
+          border-2
+          border-orange-500
+          bg-black/90
+          px-6
+          py-4
+          text-center
+          shadow-[0_0_40px_rgba(249,115,22,0.55)]
+          backdrop-blur-xl
+          transition-all
+          duration-300
+          hover:bg-orange-500/15
+          hover:shadow-[0_0_55px_rgba(249,115,22,0.75)]
+          active:scale-[0.99]
+          sm:bottom-8
+          sm:px-10
+          sm:py-5
+        "
       >
-        {/* simple bolt icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="h-7 w-7"
-        >
-          <path d="M11 21a1 1 0 01-.876-1.516L13.5 14H8a1 1 0 01-.8-1.6l6-8A1 1 0 0114.6 4l-6 8H16a1 1 0 01.876 1.516L12.5 20H11z" />
-        </svg>
+        <span className="block text-xl font-black uppercase tracking-[0.12em] text-white sm:text-2xl">
+          Enter The Yard
+        </span>
+
+        <span className="mt-1 block text-[10px] font-black uppercase tracking-[0.28em] text-orange-400 sm:text-xs">
+          Sign In With Magic Link
+        </span>
       </button>
 
       {open && (
-        <div className="magic-modal-overlay fixed inset-0 z-40 flex items-center justify-center">
-          <div className="magic-modal relative mx-4 w-full max-w-lg rounded-2xl border border-orange-500/30 bg-black/85 p-6 backdrop-blur-md">
+        <div
+          className="
+            fixed
+            inset-0
+            z-[60]
+            flex
+            items-center
+            justify-center
+            bg-black/80
+            px-4
+            backdrop-blur-md
+          "
+          onClick={() => setOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="RapYard Magic Link Sign In"
+            className="
+              relative
+              w-full
+              max-w-2xl
+              rounded-2xl
+              border
+              border-orange-500/40
+              bg-black/95
+              p-6
+              shadow-[0_0_70px_rgba(249,115,22,0.22)]
+              sm:p-8
+            "
+            onClick={(event) => event.stopPropagation()}
+          >
             <button
-              aria-label="Close"
+              type="button"
+              aria-label="Close Magic Link sign in"
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-4 rounded-md bg-zinc-900/60 px-3 py-1 text-sm text-zinc-200"
+              className="
+                absolute
+                right-4
+                top-4
+                rounded-lg
+                border
+                border-white/10
+                bg-zinc-900
+                px-3
+                py-2
+                text-xs
+                font-bold
+                uppercase
+                tracking-wider
+                text-zinc-300
+                transition
+                hover:border-orange-500/50
+                hover:text-white
+              "
             >
               Close
             </button>
 
-            <h3 className="mb-4 text-center text-lg font-bold">Enter with Magic Link</h3>
-
-            <MagicLinkForm
-              onSuccess={(_dest) => {
-                // Close modal after the magic link is sent.
-                // Actual authentication and redirect to `/rap-sheet`
-                // will occur when the user follows the emailed link
-                // and the `/auth/callback` route exchanges the code.
-                setOpen(false);
-              }}
-            />
+            <div className="pt-8">
+              <MagicLinkForm
+                onSuccess={() => {
+                  setOpen(false);
+                }}
+              />
+            </div>
           </div>
         </div>
       )}

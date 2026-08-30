@@ -11,12 +11,14 @@ export default function HeroBackground() {
       <div className="absolute inset-0 bg-black" />
 
       {/* Hero Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
-        style={{
-          backgroundImage: "url('/images/hero/RapBlock%20(2).png')",
-        }}
-      />
+<div
+  className="absolute inset-0 bg-top bg-no-repeat will-change-transform"
+  style={{
+    backgroundImage: "url('/images/hero/RapyardLandingV2.webp')",
+    backgroundSize: "75% auto",
+    backgroundPosition: "center 24px",
+  }}
+/>
 
       {/* Cool Ambient Chrome Light */}
       <div
@@ -40,7 +42,7 @@ export default function HeroBackground() {
       />
 
       {/* Main Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/20" />
 
       {/* Top Fade */}
       <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-black via-black/70 to-transparent" />
