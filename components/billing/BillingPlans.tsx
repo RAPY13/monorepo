@@ -180,16 +180,18 @@ export default function BillingPlans({
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => void manageMembership()}
-              disabled={loadingPlan !== null}
-              className="rounded-md border border-orange-500/50 bg-orange-500/10 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-orange-300 transition hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Manage Membership
-            </button>
-          </div>
+          {active && (
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => void manageMembership()}
+                disabled={loadingPlan !== null}
+                className="rounded-md border border-orange-500/50 bg-orange-500/10 px-4 py-3 text-xs font-black uppercase tracking-[0.2em] text-orange-300 transition hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Manage Membership
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
