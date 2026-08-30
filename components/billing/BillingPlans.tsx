@@ -15,7 +15,7 @@ const plans: Array<{
   {
     id: "member",
     name: "Yard Member",
-    price: "$9.99 / month",
+    price: "$5.99 / month",
     detail: "Full access to the core RapYard creator network.",
     features: [
       "Enter the full Yard",
@@ -37,8 +37,8 @@ const plans: Array<{
   {
     id: "founder",
     name: "Founder",
-    price: "$99 / month",
-    detail: "Founder-level access, recognition, and premium status.",
+    price: "$99 one time",
+    detail: "Optional lifetime Founder recognition and premium RapYard status.",
     features: [
       "Everything in Yard Pro",
       "Founder recognition",

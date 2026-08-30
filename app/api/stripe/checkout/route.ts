@@ -106,17 +106,21 @@ export async function POST(request: Request) {
 
   try {
     const origin = new URL(request.url).origin;
+    const isFounder = body.plan === "founder";
 
     const session =
       await stripe.checkout.sessions.create({
-        mode: "subscription",
+        mode: isFounder ? "payment" : "subscription",
+
         customer: customerId,
+
         line_items: [
           {
             price: priceId,
             quantity: 1,
           },
         ],
+
         allow_promotion_codes: true,
 
         success_url: `${origin}/account?checkout=success`,
@@ -127,12 +131,16 @@ export async function POST(request: Request) {
           plan: body.plan,
         },
 
-        subscription_data: {
-          metadata: {
-            supabase_user_id: user.id,
-            plan: body.plan,
-          },
-        },
+        ...(isFounder
+          ? {}
+          : {
+              subscription_data: {
+                metadata: {
+                  supabase_user_id: user.id,
+                  plan: body.plan,
+                },
+              },
+            }),
       });
 
     if (!session.url) {

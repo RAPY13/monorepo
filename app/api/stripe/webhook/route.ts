@@ -76,6 +76,60 @@ async function syncSubscription(
   }
 }
 
+async function fulfillFounderPurchase(
+  session: Stripe.Checkout.Session,
+) {
+  const userId = session.metadata?.supabase_user_id;
+  const plan = session.metadata?.plan;
+
+  if (plan !== "founder") {
+    return;
+  }
+
+  if (!userId) {
+    throw new Error(
+      `Founder checkout ${session.id} is missing supabase_user_id.`,
+    );
+  }
+
+  if (session.payment_status !== "paid") {
+    console.warn(
+      "[Stripe Webhook] Founder checkout is not paid:",
+      session.id,
+      session.payment_status,
+    );
+    return;
+  }
+
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id ?? null;
+
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({
+      ...(customerId
+        ? {
+            stripe_customer_id: customerId,
+          }
+        : {}),
+      is_founder: true,
+    })
+    .eq("id", userId);
+
+  if (error) {
+    throw new Error(
+      `Unable to grant Founder status: ${error.message}`,
+    );
+  }
+
+  console.log("[Stripe Webhook] Founder status granted", {
+    userId,
+    checkoutSessionId: session.id,
+  });
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -110,8 +164,18 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    if (typeof session.subscription === "string") {
-      try {
+    try {
+      if (
+        session.mode === "payment" &&
+        session.metadata?.plan === "founder"
+      ) {
+        await fulfillFounderPurchase(session);
+      }
+
+      if (
+        session.mode === "subscription" &&
+        typeof session.subscription === "string"
+      ) {
         const subscription =
           await stripe.subscriptions.retrieve(session.subscription);
 
@@ -119,17 +183,17 @@ export async function POST(request: Request) {
           subscription,
           session.metadata ?? {},
         );
-      } catch (error) {
-        console.error(
-          "[Stripe Webhook] Checkout synchronization failed:",
-          error,
-        );
-
-        return NextResponse.json(
-          { error: "Unable to synchronize checkout." },
-          { status: 500 },
-        );
       }
+    } catch (error) {
+      console.error(
+        "[Stripe Webhook] Checkout synchronization failed:",
+        error,
+      );
+
+      return NextResponse.json(
+        { error: "Unable to synchronize checkout." },
+        { status: 500 },
+      );
     }
   }
 
