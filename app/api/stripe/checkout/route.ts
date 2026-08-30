@@ -10,68 +10,150 @@ import { supabaseAdmin } from "@/lib/billing";
 
 export async function POST(request: Request) {
   const user = await requireUser();
+
   const body = (await request.json().catch(() => null)) as {
     plan?: unknown;
   } | null;
 
   if (!isBillingPlan(body?.plan)) {
-    return NextResponse.json({ error: "Invalid billing plan." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid billing plan." },
+      { status: 400 },
+    );
   }
 
   let priceId: string;
+
   try {
     priceId = getStripePriceId(body.plan);
   } catch (error) {
-    console.error("[Stripe Checkout] Missing Stripe plan configuration:", error);
+    console.error(
+      "[Stripe Checkout] Missing Stripe plan configuration:",
+      error,
+    );
+
     return NextResponse.json(
-      { error: `Stripe price is not configured for ${body.plan}. Check the Stripe env vars.` },
+      {
+        error: `Stripe price is not configured for ${body.plan}. Check the Stripe env vars.`,
+      },
       { status: 503 },
     );
   }
 
-  const { data: profile, error: profileError } = await supabaseAdmin
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: profile, error: profileError } =
+    await supabaseAdmin
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
 
   if (profileError) {
-    console.error("[Stripe Checkout] Profile lookup failed:", profileError.message);
-    return NextResponse.json({ error: "Unable to load billing profile." }, { status: 500 });
+    console.error(
+      "[Stripe Checkout] Profile lookup failed:",
+      profileError.message,
+    );
+
+    return NextResponse.json(
+      { error: "Unable to load billing profile." },
+      { status: 500 },
+    );
   }
 
   let customerId = profile?.stripe_customer_id ?? undefined;
+
   if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: { supabase_user_id: user.id },
-    });
-    customerId = customer.id;
+    try {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          supabase_user_id: user.id,
+        },
+      });
 
-    const { error: customerUpdateError } = await supabaseAdmin
-      .from("profiles")
-      .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
+      customerId = customer.id;
 
-    if (customerUpdateError) {
-      console.error("[Stripe Checkout] Customer save failed:", customerUpdateError.message);
-      return NextResponse.json({ error: "Unable to save billing customer." }, { status: 500 });
+      const { error: customerUpdateError } =
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            stripe_customer_id: customerId,
+          })
+          .eq("id", user.id);
+
+      if (customerUpdateError) {
+        console.error(
+          "[Stripe Checkout] Customer save failed:",
+          customerUpdateError.message,
+        );
+
+        return NextResponse.json(
+          { error: "Unable to save billing customer." },
+          { status: 500 },
+        );
+      }
+    } catch (error) {
+      console.error(
+        "[Stripe Checkout] Customer creation failed:",
+        error,
+      );
+
+      return NextResponse.json(
+        { error: "Unable to create Stripe customer." },
+        { status: 500 },
+      );
     }
   }
 
-  const origin = new URL(request.url).origin;
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    allow_promotion_codes: true,
-    success_url: `${origin}/billing?checkout=success`,
-    cancel_url: `${origin}/billing?checkout=cancelled`,
-    metadata: { supabase_user_id: user.id, plan: body.plan },
-    subscription_data: {
-      metadata: { supabase_user_id: user.id, plan: body.plan },
-    },
-  });
+  try {
+    const origin = new URL(request.url).origin;
 
-  return NextResponse.json({ url: session.url });
+    const session =
+      await stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer: customerId,
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        allow_promotion_codes: true,
+
+        success_url: `${origin}/account?checkout=success`,
+        cancel_url: `${origin}/account?checkout=cancelled`,
+
+        metadata: {
+          supabase_user_id: user.id,
+          plan: body.plan,
+        },
+
+        subscription_data: {
+          metadata: {
+            supabase_user_id: user.id,
+            plan: body.plan,
+          },
+        },
+      });
+
+    if (!session.url) {
+      return NextResponse.json(
+        { error: "Stripe did not return a checkout URL." },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({
+      url: session.url,
+    });
+  } catch (error) {
+    console.error(
+      "[Stripe Checkout] Session creation failed:",
+      error,
+    );
+
+    return NextResponse.json(
+      { error: "Unable to start Stripe checkout." },
+      { status: 500 },
+    );
+  }
 }
